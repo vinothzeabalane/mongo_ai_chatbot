@@ -1,0 +1,162 @@
+                    ┌──────────────┐
+                    │    User      │
+                    └──────┬───────┘
+                           │
+                           ▼
+                 ┌─────────────────┐
+                 │ Local LLM        │
+                 │ Router / Planner │
+                 └────────┬────────┘
+                          │
+             ┌────────────┼────────────┐
+             │            │            │
+             ▼            ▼            ▼
+        Mongo Tools    Vector RAG    Python Tools
+             │            │            │
+             ▼            ▼            ▼
+          MongoDB       PDFs        Calculations
+             │            │            │
+             └────────────┼────────────┘
+                          │
+                          ▼
+                 ┌─────────────────┐
+                 │ Local LLM        │
+                 │ Answer Generator │
+                 └────────┬────────┘
+                          │
+                          ▼
+                        User
+#-------------------------------------------------------------------------------------------------------------------------
+                 USER
+                   │
+                   ▼
+             ┌───────────┐
+             │ Local LLM │
+             │  Router   │
+             └─────┬─────┘
+                   │
+             structured intent
+                   │
+                   ▼
+          ┌──────────────────┐
+          │ Python Dashboard │
+          │      Tools       │
+          └────────┬─────────┘
+                   │
+                   ▼
+              MongoDB
+                   │
+                   ▼
+             Exact Results
+                   │
+                   ▼
+             ┌───────────┐
+             │ Local LLM │
+             │ Explainer │
+             └─────┬─────┘
+                   │
+                   ▼
+                ANSWER
+
+| Task                        | LLM | Python |
+| --------------------------- | --: | -----: |
+| Understand natural language |   ✅ |        |
+| Identify hostname           |   ✅ |        |
+| Identify SKU                |   ✅ |        |
+| Identify SPI/EB0            |   ✅ |        |
+| Identify metric             |   ✅ |        |
+| Identify dates              |   ✅ |        |
+| Build MongoDB filter        |     |      ✅ |
+| Execute MongoDB             |     |      ✅ |
+| Extract nested metric       |     |      ✅ |
+| Min                         |     |      ✅ |
+| Max                         |     |      ✅ |
+| Average                     |     |      ✅ |
+| Count                       |     |      ✅ |
+| Compare                     |     |      ✅ |
+| Group by host/SKU/date      |     |      ✅ |
+| Sort                        |     |      ✅ |
+| Percentage change           |     |      ✅ |
+| Final wording               |   ✅ |        |
+
+
+# --------------------------- current flow -------------------------
+
+mongo_ai_chatbot/
+│
+├── app.py
+│
+├── config.py
+│
+├── mongo.py
+│
+├── parser.py              ← understand question
+├── intent.py              ← classify intent
+│
+├── query_builder.py       ← create Mongo query
+├── analytics.py           ← min/max/avg/comparison
+│
+├── chart.py               ← graphs
+├── answer.py              ← format answer
+│
+├── llm.py                 ← OPTIONAL fallback
+│
+├── dashboard_tools.py
+├── dashboard_analytics.py
+├── router.py
+└── utils.py
+
+                    ┌───────────────┐
+                    │ User Question │
+                    └───────┬───────┘
+                            ↓
+                    ┌───────────────┐
+                    │    parser.py  │
+                    └───────┬───────┘
+                            ↓
+                  Structured Intent
+                            ↓
+             ┌──────────────┴──────────────┐
+             ↓                             ↓
+       Known question                 Complex question
+             ↓                             ↓
+       Python rules                     LLM
+             ↓                             ↓
+             └──────────────┬──────────────┘
+                            ↓
+                    Structured Intent
+                            ↓
+                   ┌────────────────┐
+                   │ query_builder  │
+                   └───────┬────────┘
+                           ↓
+                       MongoDB
+                           ↓
+                    Raw/aggregated data
+                           ↓
+             ┌─────────────┴─────────────┐
+             ↓                           ↓
+       analytics.py                  chart.py
+             ↓                           ↓
+       min/max/avg/etc.                 PNG
+             ↓                           ↓
+             └─────────────┬─────────────┘
+                           ↓
+                       answer.py
+                           ↓
+                     User response
+
+
+mongo_ai_chatbot/
+│
+├── app.py
+├── config.py
+├── parser.py
+├── dashboard_tools.py
+├── analytics.py
+├── formatter.py
+├── llm.py
+├── utils.py
+├── requirements.txt
+│
+└── __init__.py
