@@ -28,6 +28,8 @@ st.caption(
     "boot types and performance."
 )
 
+show_debug = st.sidebar.checkbox("Show debug info", value=False)
+
 
 @st.cache_data(show_spinner=False, ttl=60)
 def execute_cached(query_payload):
@@ -86,33 +88,34 @@ if submitted and question:
                 hide_index=True,
             )
 
-        with st.expander("Detailed view"):
-            st.markdown(
-                format_result(result)
-            )
+        if show_debug:
+            with st.expander("Detailed view"):
+                st.markdown(
+                    format_result(result)
+                )
 
-        with st.expander("MongoDB Query"):
-            pipeline_str = json.dumps(
-                result["pipeline"],
-                indent=2,
-            )
-            st.caption(
-                f"Collection: **{DATABASE_NAME}.{COLLECTION_NAME}**"
-            )
-            st.code(
-                f"db.{COLLECTION_NAME}.aggregate("
-                f"\n{pipeline_str}\n)",
-                language="javascript",
-            )
+            with st.expander("MongoDB Query"):
+                pipeline_str = json.dumps(
+                    result["pipeline"],
+                    indent=2,
+                )
+                st.caption(
+                    f"Collection: **{DATABASE_NAME}.{COLLECTION_NAME}**"
+                )
+                st.code(
+                    f"db.{COLLECTION_NAME}.aggregate("
+                    f"\n{pipeline_str}\n)",
+                    language="javascript",
+                )
 
-        with st.expander("Debug"):
-            st.json(
-                {
-                    "query": query.to_dict(),
-                    "record_count": result["record_count"],
-                    "pipeline": result["pipeline"],
-                }
-            )
+            with st.expander("Debug"):
+                st.json(
+                    {
+                        "query": query.to_dict(),
+                        "record_count": result["record_count"],
+                        "pipeline": result["pipeline"],
+                    }
+                )
 
     except Exception as exc:
 
