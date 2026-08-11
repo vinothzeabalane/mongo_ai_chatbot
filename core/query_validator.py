@@ -80,10 +80,9 @@ def validate_llm_query(data, original_question):
     if boot_type:
         boot_type = boot_type.upper()
 
+        # LLM sometimes returns combined values like "EB0,SPI" — discard them.
         if boot_type not in KNOWN_BOOT_TYPES:
-            raise ValueError(
-                f"Unknown boot type: {boot_type}"
-            )
+            boot_type = None
 
     date_from = _clean(
         data.get("date_from")
@@ -105,6 +104,16 @@ def validate_llm_query(data, original_question):
         "date",
     }:
         group_by = None
+
+    # Infer group_by from the original question when the LLM missed it.
+    q_lower = original_question.lower()
+    if group_by is None:
+        if "each boot type" in q_lower or "by boot type" in q_lower or "per boot" in q_lower:
+            group_by = "bootType"
+        elif "each host" in q_lower or "by host" in q_lower or "per host" in q_lower:
+            group_by = "hostname"
+        elif "each sku" in q_lower or "by sku" in q_lower:
+            group_by = "sku"
 
     limit = data.get(
         "limit",
