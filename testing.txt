@@ -4,7 +4,7 @@ Environment: /home/remlab/ps-bpt/MyTutorial/python3_venv/bin/python
 Scope: parser -> query_engine -> MongoDB aggregate execution
 
 Automated Test Command
-/home/remlab/ps-bpt/MyTutorial/python3_venv/bin/python -m unittest test_smoke.py -v
+/home/remlab/ps-bpt/MyTutorial/python3_venv/bin/python -m pytest tests/test_smoke.py -v
 
 Notes
 - PASS means the question was parsed and executed without raising an exception.

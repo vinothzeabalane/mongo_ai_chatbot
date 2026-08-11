@@ -1,38 +1,59 @@
 mongo_ai_chatbot/
-├── app.py
-├── charts.py
-├── config.py
-├── formatter.py
-├── mongo.py
-├── parser.py
-├── query_builder.py
-├── query_engine.py
+├── app.py                ← Streamlit entry point
+├── config.py             ← MongoDB + Ollama settings
 ├── requirements.txt
-├── test_smoke.py
-└── testing.txt
+├── workflow.txt
+├── testing.txt
+├── .gitignore
+├── core/                 ← query logic
+│   ├── parser.py         ← NL question → Query object
+│   ├── query_builder.py  ← Query → Mongo pipeline
+│   ├── query_engine.py   ← orchestrates execute()
+│   └── mongo.py          ← MongoDB connection
+├── ai/
+│   └── llm.py            ← Ollama fallback for off-topic questions
+├── ui/
+│   ├── formatter.py      ← result → readable text / table rows
+│   └── charts.py         ← result → Streamlit line chart
+└── tests/
+    └── test_smoke.py     ← automated regression suite
 
 
 User question
      │
      ▼
- parser.py           ← deterministic rule-based, no LLM
+ parser.py → is_dashboard_question()
      │
-     ▼
- query_engine.py     ← orchestrates the pipeline
+     ├── YES: dashboard question
+     │         │
+     │         ▼
+     │     query_engine.py     ← orchestrates the pipeline
+     │         │
+     │         ▼
+     │     query_builder.py    ← builds Mongo aggregate pipeline
+     │         │
+     │         ▼
+     │       MongoDB
+     │         │
+     │         ├── tabular results ──► formatter.py ──► Streamlit UI
+     │         │
+     │         └── chart results ────► charts.py ─────► Streamlit UI
      │
-     ▼
- query_builder.py    ← builds Mongo aggregate pipeline
-     │
-     ▼
-   MongoDB
-     │
-     ├── tabular results ──► formatter.py ──► Streamlit UI
-     │
-     └── chart results ────► charts.py ─────► Streamlit UI
+     └── NO: off-topic question
+               │
+               ▼
+           llm.py → Ollama (llama3.1:8b)
+               │
+               ▼
+           Streamlit UI  (plain answer)
+
+
+Sidebar
+- "Show debug info" checkbox gates: Detailed view, MongoDB Query, Debug expanders.
 
 
 Notes
-- No LLM involved; every question is handled by regex/keyword rules in parser.py.
+- parser.py uses deterministic regex/keyword rules; LLM is only used for off-topic questions.
 - Metrics live in nested Mongo fields: data.SBL_TOTAL.min, data.SBL_TOTAL.max, etc.
-- config.py holds MongoDB and Ollama settings (Ollama settings exist but are unused).
-- test_smoke.py is the automated regression suite, run with: python -m unittest test_smoke.py -v
+- config.py holds MongoDB and Ollama connection settings (env-var overridable).
+- tests/test_smoke.py is the automated regression suite, run with: python -m pytest tests/test_smoke.py -v

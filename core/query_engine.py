@@ -1,6 +1,6 @@
-from parser import Query
-from query_builder import build_pipeline
-from mongo import find_many
+from core.parser import Query
+from core.query_builder import build_pipeline
+from core.mongo import find_many
 
 
 def execute(query):

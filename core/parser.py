@@ -326,3 +326,20 @@ def is_deterministic_query(question):
         "count",
         "chart",
     }
+
+
+DASHBOARD_KEYWORDS = {
+    "host", "hostname", "metric", "boot", "spi", "eb0",
+    "sbl", "pbl", "tbl", "overall", "performance", "sku",
+    "fastest", "slowest", "highest", "lowest", "average",
+    "trend", "plot", "graph", "chart", "compare", "count",
+}
+
+
+def is_dashboard_question(question: str) -> bool:
+    """Return True when the question is likely about dashboard data."""
+    lower = normalize_text(question)
+    return any(
+        re.search(r"\b" + re.escape(kw) + r"\b", lower)
+        for kw in DASHBOARD_KEYWORDS
+    )

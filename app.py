@@ -2,17 +2,17 @@ import json
 
 import streamlit as st
 
-from parser import parse_question, is_dashboard_question
-from query_engine import execute
-from formatter import (
+from core.parser import parse_question, is_dashboard_question
+from core.query_engine import execute
+from ui.formatter import (
     format_query_context,
     format_result,
     records_to_rows,
     summarize_result,
 )
-from charts import show_chart
+from ui.charts import show_chart
 from config import COLLECTION_NAME, DATABASE_NAME
-from llm import ask_llm
+from ai.llm import ask_llm
 
 
 st.set_page_config(

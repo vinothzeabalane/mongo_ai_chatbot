@@ -1,7 +1,7 @@
 import unittest
 
-from parser import parse_question
-from query_engine import execute
+from core.parser import parse_question
+from core.query_engine import execute
 
 
 PARSER_CASES = [

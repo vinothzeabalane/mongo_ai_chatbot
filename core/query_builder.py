@@ -1,4 +1,4 @@
-from parser import Query
+from core.parser import Query
 
 
 # ============================================================
