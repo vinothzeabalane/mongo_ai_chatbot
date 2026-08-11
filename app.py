@@ -1,3 +1,5 @@
+import json
+
 import streamlit as st
 
 from parser import parse_question
@@ -9,6 +11,7 @@ from formatter import (
     summarize_result,
 )
 from charts import show_chart
+from config import COLLECTION_NAME, DATABASE_NAME
 
 
 st.set_page_config(
@@ -88,15 +91,26 @@ if submitted and question:
                 format_result(result)
             )
 
-        with st.expander("Debug"):
+        with st.expander("MongoDB Query"):
+            pipeline_str = json.dumps(
+                result["pipeline"],
+                indent=2,
+            )
+            st.caption(
+                f"Collection: **{DATABASE_NAME}.{COLLECTION_NAME}**"
+            )
+            st.code(
+                f"db.{COLLECTION_NAME}.aggregate("
+                f"\n{pipeline_str}\n)",
+                language="javascript",
+            )
 
+        with st.expander("Debug"):
             st.json(
                 {
                     "query": query.to_dict(),
-                    "record_count":
-                        result["record_count"],
-                    "pipeline":
-                        result["pipeline"],
+                    "record_count": result["record_count"],
+                    "pipeline": result["pipeline"],
                 }
             )
 

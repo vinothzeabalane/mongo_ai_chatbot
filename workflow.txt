@@ -15,13 +15,13 @@ mongo_ai_chatbot/
 User question
      │
      ▼
- parser.py
+ parser.py           ← deterministic rule-based, no LLM
      │
      ▼
- query_engine.py
+ query_engine.py     ← orchestrates the pipeline
      │
      ▼
- query_builder.py
+ query_builder.py    ← builds Mongo aggregate pipeline
      │
      ▼
    MongoDB
@@ -32,6 +32,7 @@ User question
 
 
 Notes
-- The current app uses a deterministic parser only.
-- Metric values are stored in nested Mongo fields such as data.SBL_TOTAL.min and data.SBL_TOTAL.max.
-- test_smoke.py provides the basic automated regression checks.
+- No LLM involved; every question is handled by regex/keyword rules in parser.py.
+- Metrics live in nested Mongo fields: data.SBL_TOTAL.min, data.SBL_TOTAL.max, etc.
+- config.py holds MongoDB and Ollama settings (Ollama settings exist but are unused).
+- test_smoke.py is the automated regression suite, run with: python -m unittest test_smoke.py -v

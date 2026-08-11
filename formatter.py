@@ -4,8 +4,8 @@ FRIENDLY_LABELS = {
     "bootType": "Boot Type",
     "date": "Date",
     "metric": "Metric",
-    "min": "Minimum",
-    "max": "Maximum",
+    "min": "Minimum Time format(s,ms,μs)",
+    "max": "Maximum Time format(s,ms,μs)",
     "min_seconds": "Min (seconds)",
     "max_seconds": "Max (seconds)",
     "average_seconds": "Average (seconds)",
@@ -70,24 +70,12 @@ def format_record(record):
 
     if record.get("min") is not None:
         lines.append(
-            f"**Min:** `{record['min']}`"
+            f"**{FRIENDLY_LABELS['min']}:** `{record['min']}`"
         )
 
     if record.get("max") is not None:
         lines.append(
-            f"**Max:** `{record['max']}`"
-        )
-
-    if record.get("min_seconds") is not None:
-        lines.append(
-            "**Min seconds:** "
-            f"`{format_seconds(record['min_seconds'])}`"
-        )
-
-    if record.get("max_seconds") is not None:
-        lines.append(
-            "**Max seconds:** "
-            f"`{format_seconds(record['max_seconds'])}`"
+            f"**{FRIENDLY_LABELS['max']}:** `{record['max']}`"
         )
 
     return "\n\n".join(lines)
@@ -174,8 +162,6 @@ def records_to_rows(records):
             "metric",
             "min",
             "max",
-            "min_seconds",
-            "max_seconds",
             "average_seconds",
             "count",
         ]:

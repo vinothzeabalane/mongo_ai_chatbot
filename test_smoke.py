@@ -54,6 +54,13 @@ PARSER_CASES = [
             "hostname": "rc136-031-19-s3",
         },
     ),
+    (
+        "list all tbl total value",
+        {
+            "operation": "metric",
+            "metric": "TBL_TOTAL",
+        },
+    ),
 ]
 
 

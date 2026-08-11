@@ -8,9 +8,14 @@ from typing import Optional, Tuple
 # ============================================================
 
 KNOWN_METRICS = {
+    "BOOTLOADERS_TOTAL",
+    "PBL_TOTAL",
     "SBL_TOTAL",
+    "TBL_TOTAL",
     "OVERALL_TOTAL",
+    "PBL",
     "SBL",
+    "TBL",
     "OVERALL",
 }
 
@@ -20,12 +25,18 @@ KNOWN_BOOT_TYPES = {
 }
 
 METRIC_ALIASES = {
+    "bootloaders total": "BOOTLOADERS_TOTAL",
     "overall total": "OVERALL_TOTAL",
     "overall time": "OVERALL_TOTAL",
     "boot time": "OVERALL_TOTAL",
+    "pbl total": "PBL_TOTAL",
     "sbl total": "SBL_TOTAL",
+    "tbl total": "TBL_TOTAL",
+    "bootloaders": "BOOTLOADERS_TOTAL",
     "overall": "OVERALL",
+    "pbl": "PBL",
     "sbl": "SBL",
+    "tbl": "TBL",
 }
 
 MAX_LIMIT = 500
