@@ -1,51 +1,55 @@
 mongo_ai_chatbot/
-├── app.py                ← Streamlit entry point
-├── config.py             ← MongoDB + Ollama settings
+├── app.py                     ← Streamlit entry point
+├── config.py                  ← MongoDB + Ollama settings (env-var overridable)
 ├── requirements.txt
 ├── workflow.txt
 ├── testing.txt
 ├── .gitignore
-├── core/                 ← query logic
-│   ├── parser.py         ← NL question → Query object
-│   ├── query_builder.py  ← Query → Mongo pipeline
-│   ├── query_engine.py   ← orchestrates execute()
-│   └── mongo.py          ← MongoDB connection
+├── core/
+│   ├── parser.py              ← NL → Query object; deterministic regex/keyword rules
+│   │                            also: is_dashboard_question(), is_simple_dashboard_question()
+│   ├── hybrid_parser.py       ← Three-way routing entry point
+│   ├── query_builder.py       ← Query → Mongo aggregate pipeline
+│   ├── query_engine.py        ← Calls query_builder + mongo, returns results dict
+│   ├── query_validator.py     ← Validates + sanitises LLM JSON → trusted Query object
+│   └── mongo.py               ← MongoDB connection pool
 ├── ai/
-│   └── llm.py            ← Ollama fallback for off-topic questions
+│   └── llm.py                 ← ask_llm() JSON query parser
+│                                 ask_llm_plain() conversational answer
 ├── ui/
-│   ├── formatter.py      ← result → readable text / table rows
-│   └── charts.py         ← result → Streamlit line chart
+│   ├── formatter.py           ← Results → friendly table rows + summary text
+│   └── charts.py              ← Results → Streamlit line chart
 └── tests/
-    └── test_smoke.py     ← automated regression suite
+    └── test_smoke.py          ← Regression suite (pytest)
 
 
 User question
      │
      ▼
- parser.py → is_dashboard_question()
+ core/hybrid_parser.py → parse_hybrid()
      │
-     ├── YES: dashboard question
-     │         │
-     │         ▼
-     │     query_engine.py     ← orchestrates the pipeline
-     │         │
-     │         ▼
-     │     query_builder.py    ← builds Mongo aggregate pipeline
-     │         │
-     │         ▼
-     │       MongoDB
-     │         │
-     │         ├── tabular results ──► formatter.py ──► Streamlit UI
-     │         │
-     │         └── chart results ────► charts.py ─────► Streamlit UI
+     ├─ is_dashboard_question()? NO
+     │       └─► ai/llm.py ask_llm_plain()
+     │                 └─► st.info(plain answer)
      │
-     └── NO: off-topic question
-               │
-               ▼
-           llm.py → Ollama (llama3.1:8b)
-               │
-               ▼
-           Streamlit UI  (plain answer)
+     ├─ is_simple_dashboard_question()? YES
+     │       └─► core/parser.py (deterministic)
+     │                 └─► core/query_engine.py
+     │                           └─► core/query_builder.py → MongoDB
+     │
+     └─ complex dashboard question
+             └─► ai/llm.py ask_llm() → JSON
+                       └─► core/query_validator.py (sanitise)
+                                 └─► core/query_engine.py
+                                           └─► core/query_builder.py → MongoDB
+                                                     │
+                                          ┌──────────┴──────────┐
+                                          ▼                      ▼
+                                   ui/formatter.py         ui/charts.py
+                                          │                      │
+                                          └──────────┬───────────┘
+                                                     ▼
+                                              Streamlit UI
 
 
 Sidebar

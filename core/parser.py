@@ -368,3 +368,90 @@ def is_dashboard_question(question: str) -> bool:
         re.search(r"\b" + re.escape(kw) + r"\b", lower)
         for kw in DASHBOARD_KEYWORDS
     )
+
+def is_simple_dashboard_question(question: str) -> bool:
+    """
+    Decide whether the existing deterministic parser is
+    reliable enough to handle the question.
+
+    Simple questions use regex parsing.
+
+    More natural-language questions are sent to Ollama.
+    """
+
+    if not isinstance(question, str):
+        return False
+
+    q = normalize_text(question)
+
+    # Explicit complex language.
+    complex_phrases = [
+        "which host",
+        "which hosts",
+        "what host",
+        "what hosts",
+        "tell me",
+        "compare",
+        "compared with",
+        "compared to",
+        "relative to",
+        "among",
+        "across",
+        "for each",
+        "per host",
+        "per sku",
+        "per boot",
+        "between",
+        "during",
+        "last month",
+        "this month",
+        "last week",
+        "this week",
+        "previous month",
+        "recent",
+    ]
+
+    if any(
+        phrase in q
+        for phrase in complex_phrases
+    ):
+        return False
+
+    # Existing parser is reliable for explicit metric names.
+    if _METRIC_PATTERN.search(question):
+        return True
+
+    # Explicit hostname + metric / boot type.
+    if extract_hostname(question):
+        if (
+            extract_metric(question)
+            or extract_boot_type(question)
+        ):
+            return True
+
+    # Very explicit simple operations.
+    simple_words = [
+        "list",
+        "show",
+        "display",
+        "give",
+    ]
+
+    if (
+        any(
+            re.search(
+                r"\b" + re.escape(word) + r"\b",
+                q,
+            )
+            for word in simple_words
+        )
+        and (
+            extract_metric(question)
+            or extract_hostname(question)
+            or extract_boot_type(question)
+        )
+    ):
+        return True
+
+    return False
+
