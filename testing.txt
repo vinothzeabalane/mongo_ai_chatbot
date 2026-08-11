@@ -1,0 +1,163 @@
+Basic Testing Report
+Date: 2026-08-11
+Environment: /home/remlab/ps-bpt/MyTutorial/python3_venv/bin/python
+Scope: parser -> query_engine -> MongoDB aggregate execution
+
+Automated Test Command
+/home/remlab/ps-bpt/MyTutorial/python3_venv/bin/python -m unittest test_smoke.py -v
+
+Notes
+- PASS means the question was parsed and executed without raising an exception.
+- A record count of 0 is still considered PASS for this smoke test because it shows the pipeline ran successfully; it may indicate no matching data in MongoDB.
+
+Smoke Test Results
+1. Question: list all hosts
+	Status: PASS
+	Parsed operation: list
+	Record count: 10
+
+2. Question: show OVERALL_TOTAL for rc136-031-19-s3
+	Status: PASS
+	Parsed operation: metric
+	Parsed metric: OVERALL_TOTAL
+	Parsed hostname: rc136-031-19-s3
+	Record count: 0
+
+3. Question: show performance of rc136-031-19-s3 SPI
+	Status: PASS
+	Parsed operation: list
+	Parsed hostname: rc136-031-19-s3
+	Parsed boot type: SPI
+	Record count: 1
+
+4. Question: count records for SPI
+	Status: PASS
+	Parsed operation: count
+	Parsed boot type: SPI
+	Record count: 1
+
+5. Question: show SBL_TOTAL on 2026-07-31
+	Status: PASS
+	Parsed operation: metric
+	Parsed metric: SBL_TOTAL
+	Parsed date: 2026-07-31
+	Record count: 0
+
+6. Question: plot SBL_TOTAL for rc136-031-19-s3
+	Status: PASS
+	Parsed operation: chart
+	Parsed metric: SBL_TOTAL
+	Parsed hostname: rc136-031-19-s3
+	Record count: 0
+
+Manual Test Questions
+
+list all hosts
+list all host details
+show all hosts
+what hosts do we have
+which hosts are available
+show unique hosts
+give me the host list
+show hostname sku and boot type
+show all host details
+which hostnames are present
+what are the different hosts
+
+which host has the highest SBL_TOTAL
+which host has the lowest SBL_TOTAL
+which host has the highest overall time
+which host has the lowest overall time
+what is the maximum SBL_TOTAL
+what is the minimum SBL_TOTAL
+show highest SBL_TOTAL
+show lowest SBL_TOTAL
+find the host with maximum OVERALL_TOTAL
+find the host with minimum OVERALL_TOTAL
+which boot type has the highest SBL_TOTAL
+which boot type has the lowest SBL_TOTAL
+
+
+which host has the highest SBL_TOTAL
+which host has the lowest SBL_TOTAL
+which host has the highest overall time
+which host has the lowest overall time
+what is the maximum SBL_TOTAL
+what is the minimum SBL_TOTAL
+show highest SBL_TOTAL
+show lowest SBL_TOTAL
+find the host with maximum OVERALL_TOTAL
+find the host with minimum OVERALL_TOTAL
+which boot type has the highest SBL_TOTAL
+which boot type has the lowest SBL_TOTAL
+
+show performance of rc136-031-19-s3
+show metrics for rc136-031-19-s3
+show all metrics for rc136-031-19-s3
+show SBL_TOTAL for rc136-031-19-s3
+show OVERALL_TOTAL for rc136-031-19-s3
+show performance of rc136-031-19-s3 SPI
+show performance of rc136-031-19-s3 EB0
+
+show performance of rc136-031-19-s3
+show metrics for rc136-031-19-s3
+show all metrics for rc136-031-19-s3
+show SBL_TOTAL for rc136-031-19-s3
+show OVERALL_TOTAL for rc136-031-19-s3
+show performance of rc136-031-19-s3 SPI
+show performance of rc136-031-19-s3 EB0
+
+
+show EB0 hosts
+show SPI hosts
+show SBL_TOTAL for EB0
+show SBL_TOTAL for SPI
+compare EB0 and SPI
+which is faster EB0 or SPI
+which boot type has the highest overall time
+which boot type has the lowest overall time
+
+
+show SBL_TOTAL on 2026-07-31
+show SBL_TOTAL for 2026-08-01
+show performance on 2026-07-31
+show OVERALL_TOTAL on 2026-08-01
+
+
+compare hosts
+compare all hosts by SBL_TOTAL
+compare EB0 and SPI
+compare SKUs
+show SBL_TOTAL by host
+show SBL_TOTAL by boot type
+show SBL_TOTAL by SKU
+group SBL_TOTAL by hostname
+group OVERALL_TOTAL by boot type
+
+
+show SBL_TOTAL trend
+show SBL_TOTAL trend for rc136-031-19-s3
+show OVERALL_TOTAL trend
+how has SBL_TOTAL changed over time
+show performance over time
+show daily SBL_TOTAL
+
+
+plot SBL_TOTAL
+plot SBL_TOTAL for rc136-031-19-s3
+plot OVERALL_TOTAL over time
+graph SBL_TOTAL by date
+show SBL_TOTAL trend graph
+plot EB0 vs SPI
+plot SBL_TOTAL for all hosts
+visualize OVERALL_TOTAL
+create a graph of SBL_TOTAL
+
+which host is fastest
+which host is slowest
+who is fastest
+who is slowest
+what machine is fastest
+what machine is slowest
+which server has the highest time
+which server has the lowest time

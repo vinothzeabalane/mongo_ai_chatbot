@@ -1,264 +1,110 @@
-import json
-
 import streamlit as st
 
 from parser import parse_question
-
-from dashboard_tools import (
-    list_hosts,
-    query_metric,
+from query_engine import execute
+from formatter import (
+    format_query_context,
+    format_result,
+    records_to_rows,
+    summarize_result,
 )
+from charts import show_chart
 
-from analytics import analyze
-
-from formatter import format_result
-
-
-# ============================================================
-# Page
-# ============================================================
 
 st.set_page_config(
-    page_title="Dashboard AI Assistant",
-    layout="wide"
-)
-
-st.title(
-    "Dashboard AI Assistant"
-)
-
-st.write(
-    "Ask questions about hosts, metrics, boot types and performance."
+    page_title="BootProfile Dashboard AI Chatbot",
+    page_icon="📊",
+    layout="wide",
 )
 
 
-# ============================================================
-# Question
-# ============================================================
+st.title("BootProfile Dashboard AI Chatbot")
 
-question = st.text_input(
-    "Question",
-    placeholder=(
-        "Example: "
-        "which host has the highest overall time?"
+st.caption(
+    "Ask questions about hosts, metrics, "
+    "boot types and performance."
+)
+
+
+@st.cache_data(show_spinner=False, ttl=60)
+def execute_cached(query_payload):
+    query = parse_question(query_payload["question"])
+    return execute(query)
+
+
+with st.form("question_form"):
+
+    question = st.text_input(
+        "Question",
+        placeholder=(
+            "Example: Show OVERALL_TOTAL for "
+            "rc136-031-19-s3 SPI"
+        ),
     )
-)
+
+    submitted = st.form_submit_button("Ask")
 
 
-# ============================================================
-# Ask
-# ============================================================
-
-if st.button("Ask"):
-
-    if not question.strip():
-
-        st.warning(
-            "Please enter a question."
-        )
-
-        st.stop()
-
+if submitted and question:
 
     try:
 
-        # ====================================================
-        # 1. Parse
-        # ====================================================
+        query = parse_question(question)
+        result = execute_cached({"question": query.question})
+        rows = records_to_rows(result["records"])
 
-        parsed = parse_question(
-            question.strip()
+        st.success(summarize_result(result))
+        st.caption(
+            format_query_context(
+                result["query"],
+                result["record_count"],
+            )
         )
 
-
-        # ====================================================
-        # 2. Show parser result
-        # ====================================================
-
-        operation = parsed[
-            "operation"
-        ]
-
-        hostname = parsed[
-            "hostname"
-        ]
-
-        boot_type = parsed[
-            "bootType"
-        ]
-
-        sku = parsed[
-            "sku"
-        ]
-
-        metric = parsed[
-            "metric"
-        ]
-
-        date_from = parsed[
-            "date_from"
-        ]
-
-        date_to = parsed[
-            "date_to"
-        ]
-
-
-        # ====================================================
-        # 3. List hosts
-        # ====================================================
-
-        if operation == "list_hosts":
-
-            result = list_hosts(
-
-                bootType=boot_type,
-
-                sku=sku
-            )
-
-            answer = format_result(
-                operation,
-                result
-            )
-
-
-        # ====================================================
-        # 4. Metric question
-        # ====================================================
-
-        elif metric:
-
-            result = query_metric(
-
-                hostname=hostname,
-
-                bootType=boot_type,
-
-                sku=sku,
-
-                metric=metric,
-
-                date_from=date_from,
-
-                date_to=date_to
-            )
-
-
-            # ------------------------------------------------
-            # Analysis requested?
-            # ------------------------------------------------
-
-            if operation in (
-                "average",
-                "highest",
-                "lowest",
-                "compare",
-                "change",
-            ):
-
-                analysis = analyze(
-                    operation,
-                    result[
-                        "records"
-                    ]
-                )
-
-                answer = format_result(
-
-                    operation,
-
-                    result,
-
-                    analysis
-                )
-
-            else:
-
-                answer = format_result(
-
-                    operation,
-
-                    result
-                )
-
-
-        # ====================================================
-        # 5. Unknown question
-        # ====================================================
-
-        else:
-
-            answer = (
-                "I could not determine the metric or "
-                "operation from the question."
-            )
-
-
-        # ====================================================
-        # Answer
-        # ====================================================
-
-        st.subheader(
-            "Answer"
+        stats = st.columns(3)
+        stats[0].metric("Rows", result["record_count"])
+        stats[1].metric(
+            "Operation",
+            result["query"].get("operation", "list").title(),
+        )
+        stats[2].metric(
+            "Metric",
+            (result["query"].get("metric") or "All").replace("_", " "),
         )
 
-        st.markdown(
-            answer
-        )
+        if query.operation == "chart":
+            show_chart(result)
 
+        if rows:
+            st.subheader("Results")
+            st.dataframe(
+                rows,
+                use_container_width=True,
+                hide_index=True,
+            )
 
-        # ====================================================
-        # Debug
-        # ====================================================
+        with st.expander("Detailed view"):
+            st.markdown(
+                format_result(result)
+            )
 
-        with st.expander(
-            "Debug",
-            expanded=False
-        ):
+        with st.expander("Debug"):
 
-            st.json({
-                "parsed":
-                    parsed,
-
-                "operation":
-                    operation,
-
-                "metric":
-                    metric,
-
-                "hostname":
-                    hostname,
-
-                "bootType":
-                    boot_type,
-
-                "sku":
-                    sku,
-
-                "date_from":
-                    date_from,
-
-                "date_to":
-                    date_to,
-            })
-
-
-            if "result" in locals():
-
-                st.markdown(
-                    "### MongoDB result"
-                )
-
-                st.json(
-                    result
-                )
-
+            st.json(
+                {
+                    "query": query.to_dict(),
+                    "record_count":
+                        result["record_count"],
+                    "pipeline":
+                        result["pipeline"],
+                }
+            )
 
     except Exception as exc:
 
         st.error(
-            "Error: {}".format(
-                exc
-            )
+            f"{type(exc).__name__}: {exc}"
         )
+
+        with st.expander("Error details"):
+            st.exception(exc)

@@ -1,406 +1,317 @@
 import re
+from dataclasses import dataclass, asdict
+from typing import Optional, Tuple
 
 
-KNOWN_METRICS = [
-    "OVERALL_TOTAL",
+# ============================================================
+# Known values
+# ============================================================
 
-    "BOOTLOADERS_TOTAL",
-
+KNOWN_METRICS = {
     "SBL_TOTAL",
-    "PBL_TOTAL",
-    "TBL_TOTAL",
+    "OVERALL_TOTAL",
+    "SBL",
+    "OVERALL",
+}
 
-    "SBL_SPI_INIT",
-    "SBL_FCONFIG_LOAD",
-    "SBL_CRYPTO_INIT",
-    "SBL_CRITICAL_BOOT_LOAD",
-    "SBL_UFH_LOAD_AND_VERIFY",
-    "SBL_DIGEST_COMPUTE",
-    "SBL_LOAD_TBL_IMAGE",
-    "SBL_RIOT",
+KNOWN_BOOT_TYPES = {
+    "EB0",
+    "SPI",
+}
 
-    "TBL_PRETOTAL",
-    "TBL_SPI_INIT",
-    "TBL_FCONFIG_LOAD",
-    "TBL_PCIE_INIT",
-    "TBL_LOAD_PBL_IMAGE",
-    "TBL_RIOT",
+METRIC_ALIASES = {
+    "overall total": "OVERALL_TOTAL",
+    "overall time": "OVERALL_TOTAL",
+    "boot time": "OVERALL_TOTAL",
+    "sbl total": "SBL_TOTAL",
+    "overall": "OVERALL",
+    "sbl": "SBL",
+}
 
-    "PBL_SPI_INIT",
-    "PBL_PARSE_FCONFIG",
-    "PBL_PMIC_INIT",
-    "PBL_DRAM_INIT",
-    "PBL_SCRUB_MAINFW_DRAM",
-    "PBL_CRYPTO_INIT",
-    "PBL_NAND_INIT",
-    "PBL_LOAD_MAIN_FW",
-    "PBL_RIOT",
-    "PBL_WAKE_CORES_JUMP",
-
-    "MAINFW_BSS_INIT",
-    "MAINFW_PCM_BSS_INIT",
-    "MAINFW_SPI_SEC_INIT",
-]
+MAX_LIMIT = 500
+DEFAULT_LIMIT = 100
 
 
 # ============================================================
-# Host
+# Query model
 # ============================================================
 
-def extract_hostname(question):
+@dataclass
+class Query:
+    question: str
+    operation: str = "list"
+    metric: Optional[str] = None
+    hostname: Optional[str] = None
+    sku: Optional[str] = None
+    bootType: Optional[str] = None
+    date_from: Optional[str] = None
+    date_to: Optional[str] = None
+    group_by: Optional[str] = None
+    limit: int = DEFAULT_LIMIT
 
+    def to_dict(self):
+        return asdict(self)
+
+
+# ============================================================
+# Cleaning
+# ============================================================
+
+def clean_question(question: str) -> str:
+    if not isinstance(question, str):
+        return ""
+
+    return " ".join(question.strip().split())
+
+
+def normalize_text(question: str) -> str:
+    return clean_question(question).lower()
+
+
+# ============================================================
+# Extraction helpers
+# ============================================================
+
+def extract_hostname(question: str) -> Optional[str]:
     patterns = [
-
-        r"\b(rc\d{3}-\d{3}-\d{2}-s\d+)\b",
-
-        r"\b(lm-\d{3}-\d{2}-s\d+)\b",
+        r"\b(?:rc|lm)-\d+-\d+-\d+-s\d+\b",
+        r"\b[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)+-s\d+\b",
     ]
 
     for pattern in patterns:
-
-        match = re.search(
-            pattern,
-            question,
-            re.IGNORECASE
-        )
-
+        match = re.search(pattern, question, re.IGNORECASE)
         if match:
-
-            return match.group(1)
+            return match.group(0)
 
     return None
 
 
-# ============================================================
-# Boot type
-# ============================================================
-
-def extract_boot_type(question):
-
+def extract_sku(question: str) -> Optional[str]:
     match = re.search(
-        r"\b(SPI|EB0)\b",
+        r"\b\d+(?:TB|GB|PB)\b",
         question,
-        re.IGNORECASE
+        re.IGNORECASE,
     )
 
     if match:
-
-        return match.group(1).upper()
-
-    return None
-
-
-# ============================================================
-# SKU
-# ============================================================
-
-def extract_sku(question):
-
-    match = re.search(
-        r"\b(\d+(?:\.\d+)?TB)\b",
-        question,
-        re.IGNORECASE
-    )
-
-    if match:
-
-        return match.group(1).upper()
+        return match.group(0).upper()
 
     return None
 
 
-# ============================================================
-# Metric
-# ============================================================
-
-def extract_metric(question):
-
+def extract_boot_type(question: str) -> Optional[str]:
     upper = question.upper()
 
-    # Exact known metrics first.
-
-    for metric in sorted(
-        KNOWN_METRICS,
-        key=len,
-        reverse=True
-    ):
-
-        if metric in upper:
-
-            return metric
-
-    # Natural language mappings.
-
-    mappings = {
-
-        "overall total":
-            "OVERALL_TOTAL",
-
-        "overall time":
-            "OVERALL_TOTAL",
-
-        "overall boot time":
-            "OVERALL_TOTAL",
-
-        "total boot time":
-            "OVERALL_TOTAL",
-
-        "bootloader total":
-            "BOOTLOADERS_TOTAL",
-
-        "bootloaders total":
-            "BOOTLOADERS_TOTAL",
-
-        "sbl total":
-            "SBL_TOTAL",
-
-        "pbl total":
-            "PBL_TOTAL",
-
-        "tbl total":
-            "TBL_TOTAL",
-    }
-
-    lower = question.lower()
-
-    for phrase, metric in mappings.items():
-
-        if phrase in lower:
-
-            return metric
+    for boot_type in KNOWN_BOOT_TYPES:
+        if re.search(r"\b" + re.escape(boot_type) + r"\b", upper):
+            return boot_type
 
     return None
 
 
-# ============================================================
-# Dates
-# ============================================================
+def extract_metric(question: str) -> Optional[str]:
+    upper = question.upper()
+    normalized = normalize_text(question)
 
-def extract_dates(question):
+    for phrase, metric in sorted(
+        METRIC_ALIASES.items(),
+        key=lambda item: len(item[0]),
+        reverse=True,
+    ):
+        if re.search(r"\b" + re.escape(phrase) + r"\b", normalized):
+            return metric
 
-    dates = re.findall(
-        r"\b\d{4}-\d{2}-\d{2}\b",
-        question
+    for metric in sorted(KNOWN_METRICS, key=len, reverse=True):
+        if re.search(r"\b" + re.escape(metric) + r"\b", upper):
+            return metric
+
+    match = re.search(
+        r"\b[A-Z][A-Z0-9_]*_[A-Z0-9_]+\b",
+        upper,
     )
 
-    if len(dates) >= 2:
+    if match:
+        return match.group(0)
 
+    return None
+
+
+def extract_dates(question: str) -> Tuple[Optional[str], Optional[str]]:
+    dates = [
+        value.replace("/", "-")
+        for value in re.findall(
+            r"\b\d{4}[-/]\d{2}[-/]\d{2}\b",
+            question,
+        )
+    ]
+
+    if len(dates) >= 2:
         return dates[0], dates[1]
 
     if len(dates) == 1:
-
         return dates[0], dates[0]
 
     return None, None
 
 
+def extract_limit(question: str) -> int:
+    patterns = [
+        r"\btop\s+(\d{1,4})\b",
+        r"\bfirst\s+(\d{1,4})\b",
+        r"\blatest\s+(\d{1,4})\b",
+        r"\blast\s+(\d{1,4})\b",
+    ]
+
+    for pattern in patterns:
+        match = re.search(pattern, question, re.IGNORECASE)
+        if match:
+            value = int(match.group(1))
+            return max(1, min(value, MAX_LIMIT))
+
+    return DEFAULT_LIMIT
+
+
+def extract_group_by(question: str) -> Optional[str]:
+    lower = normalize_text(question)
+
+    if " by host" in lower or " by hostname" in lower:
+        return "hostname"
+
+    if " by sku" in lower:
+        return "sku"
+
+    if " by boot" in lower or " by boot type" in lower:
+        return "bootType"
+
+    if " by date" in lower or " trend" in lower:
+        return "date"
+
+    return None
+
+
+def infer_metric(question: str, operation: str, metric: Optional[str]) -> Optional[str]:
+    if metric:
+        return metric
+
+    lower = normalize_text(question)
+
+    if operation in {"highest", "lowest", "average", "chart"}:
+        if _contains_word(lower, ["time", "fastest", "slowest"]):
+            return "OVERALL_TOTAL"
+
+    return metric
+
+
 # ============================================================
-# Operation
+# Operation detection
 # ============================================================
 
-def detect_operation(question):
+def _contains_word(text: str, words) -> bool:
+    for word in words:
+        if re.search(r"\b" + re.escape(word) + r"\b", text):
+            return True
 
-    q = question.lower().strip()
-
-    # --------------------------------------------------------
-    # Average
-    # --------------------------------------------------------
-
-    if any(
-        word in q
-        for word in [
-            "average",
-            "avg",
-            "mean"
-        ]
-    ):
-
-        return "average"
+    return False
 
 
-    # --------------------------------------------------------
-    # Comparison
-    # --------------------------------------------------------
+def _contains_phrase(text: str, phrases) -> bool:
+    for phrase in phrases:
+        if phrase in text:
+            return True
 
-    if any(
-        word in q
-        for word in [
-            "compare",
-            "comparison",
-            "versus",
-            "vs"
-        ]
-    ):
-
-        return "compare"
+    return False
 
 
-    # --------------------------------------------------------
-    # Highest
-    # --------------------------------------------------------
+def detect_operation(question: str, metric: Optional[str]) -> str:
+    q = normalize_text(question)
 
-    if any(
-        phrase in q
-        for phrase in [
-            "highest",
-            "maximum",
-            "max",
-            "slowest",
-            "higher",
-            "largest",
-            "worst",
-            "which host",
-        ]
-    ):
-
-        # Important:
-        # "which host the overall time is higher"
-        # should become highest.
-
-        if (
-            "which host" in q
-            or "which hosts" in q
-            or "host" in q
-        ):
-
-            return "highest"
-
-        if "highest" in q:
-            return "highest"
-
-        if "maximum" in q:
-            return "highest"
-
-        if "slowest" in q:
-            return "highest"
-
-
-    # --------------------------------------------------------
-    # Lowest
-    # --------------------------------------------------------
-
-    if any(
-        phrase in q
-        for phrase in [
-            "lowest",
-            "minimum",
-            "min",
-            "fastest",
-            "lower",
-            "smallest",
-            "best",
-        ]
-    ):
-
+    if _contains_word(q, ["fastest", "best"]):
         return "lowest"
 
+    if _contains_word(q, ["slowest", "worst"]):
+        return "highest"
 
-    # --------------------------------------------------------
-    # Percentage / change
-    # --------------------------------------------------------
+    if _contains_word(q, ["lowest", "minimum", "min", "smallest"]):
+        return "lowest"
 
-    if any(
-        word in q
-        for word in [
-            "percentage",
-            "percent",
-            "change",
-            "increase",
-            "decrease",
-            "improved",
-            "degraded",
-            "trend",
-        ]
+    if _contains_word(
+        q,
+        ["highest", "maximum", "max", "largest"],
     ):
+        return "highest"
 
-        return "change"
+    if _contains_word(q, ["average", "avg", "mean"]):
+        return "average"
 
-
-    # --------------------------------------------------------
-    # Unique hosts
-    # --------------------------------------------------------
-
-    if (
-        "host" in q
-        and any(
-            word in q
-            for word in [
-                "list",
-                "show",
-                "unique",
-                "all",
-                "which",
-                "what",
-            ]
-        )
-        and extract_metric(question) is None
+    if _contains_word(q, ["count"]) or _contains_phrase(
+        q,
+        ["how many", "number of"],
     ):
+        return "count"
 
-        return "list_hosts"
+    if _contains_word(q, ["plot", "graph", "chart", "trend"]):
+        return "chart"
 
+    if metric:
+        return "metric"
 
-    # --------------------------------------------------------
-    # Show / history
-    # --------------------------------------------------------
+    if _contains_word(q, ["list", "show", "display", "give", "which"]):
+        return "list"
 
-    if any(
-        word in q
-        for word in [
-            "show",
-            "display",
-            "give",
-            "get",
-            "history",
-            "details",
-        ]
-    ):
-
-        return "show"
-
-
-    # Default.
-
-    if extract_metric(question):
-
-        return "show"
-
-    return "unknown"
+    return "list"
 
 
 # ============================================================
-# Complete parser
+# Main parser
 # ============================================================
 
-def parse_question(question):
+def parse_question(question: str) -> Query:
+    question = clean_question(question)
 
-    date_from, date_to = extract_dates(
-        question
+    metric = extract_metric(question)
+    hostname = extract_hostname(question)
+    sku = extract_sku(question)
+    boot_type = extract_boot_type(question)
+    date_from, date_to = extract_dates(question)
+    limit = extract_limit(question)
+    group_by = extract_group_by(question)
+
+    operation = detect_operation(question, metric)
+    metric = infer_metric(question, operation, metric)
+
+    return Query(
+        question=question,
+        operation=operation,
+        metric=metric,
+        hostname=hostname,
+        sku=sku,
+        bootType=boot_type,
+        date_from=date_from,
+        date_to=date_to,
+        group_by=group_by,
+        limit=limit,
     )
 
-    result = {
 
-        "question": question,
+# ============================================================
+# Compatibility helpers
+# ============================================================
 
-        "operation":
-            detect_operation(question),
+def is_deterministic_query(question):
+    if isinstance(question, Query):
+        return True
 
-        "hostname":
-            extract_hostname(question),
+    if not isinstance(question, str):
+        return False
 
-        "bootType":
-            extract_boot_type(question),
+    q = parse_question(question)
 
-        "sku":
-            extract_sku(question),
-
-        "metric":
-            extract_metric(question),
-
-        "date_from":
-            date_from,
-
-        "date_to":
-            date_to,
+    return q.operation in {
+        "list",
+        "metric",
+        "lowest",
+        "highest",
+        "average",
+        "count",
+        "chart",
     }
-
-    return result

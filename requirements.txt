@@ -1,5 +1,5 @@
-pymongo
-ollama
+
 streamlit
-python-dotenv
-matplotlib
+pymongo
+pandas
+

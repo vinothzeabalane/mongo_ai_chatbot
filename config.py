@@ -10,9 +10,15 @@ MONGO_URI = os.getenv(
     "mongodb://10.74.135.199:27018"
 )
 
-DATABASE_NAME = "openstack"
+DATABASE_NAME = os.getenv(
+    "DATABASE_NAME",
+    "openstack"
+)
 
-COLLECTION_NAME = "dashboard"
+COLLECTION_NAME = os.getenv(
+    "COLLECTION_NAME",
+    "dashboard"
+)
 
 
 # ============================================================
