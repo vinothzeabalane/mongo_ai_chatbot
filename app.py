@@ -16,7 +16,7 @@ from ai.llm import ask_llm
 
 
 st.set_page_config(
-    page_title="BootProfile Dashboard AI Chatbot",
+    page_title="Platform Service AI Chatbot",
     page_icon="📊",
     layout="wide",
 )

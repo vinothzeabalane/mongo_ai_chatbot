@@ -8,15 +8,35 @@ from typing import Optional, Tuple
 # ============================================================
 
 KNOWN_METRICS = {
+    # SBL metrics
+    "SBL_SPI_INIT", "SBL_FCONFIG_LOAD", "SBL_CRYPTO_INIT",
+    "SBL_CRITICAL_BOOT_LOAD", "SBL_UFH_LOAD_AND_VERIFY",
+    "SBL_DIGEST_COMPUTE", "SBL_LOAD_TBL_IMAGE", "SBL_RIOT", "SBL_TOTAL",
+    # TBL metrics
+    "TBL_PRETOTAL", "TBL_SPI_INIT", "TBL_FCONFIG_LOAD", "TBL_PCIE_INIT",
+    "TBL_LOAD_PBL_IMAGE", "TBL_RIOT", "TBL_TOTAL",
+    # PBL metrics
+    "PBL_SPI_INIT", "PBL_PARSE_FCONFIG", "PBL_PMIC_INIT", "PBL_DRAM_INIT",
+    "PBL_SCRUB_MAINFW_DRAM", "PBL_CRYPTO_INIT", "PBL_NAND_INIT",
+    "PBL_LOAD_MAIN_FW", "PBL_RIOT", "PBL_WAKE_CORES_JUMP", "PBL_TOTAL",
+    # BOOTLOADERS
     "BOOTLOADERS_TOTAL",
-    "PBL_TOTAL",
-    "SBL_TOTAL",
-    "TBL_TOTAL",
+    # MAINFW metrics
+    "MAINFW_BSS_INIT", "MAINFW_PCM_BSS_INIT", "MAINFW_SPI_SEC_INIT",
+    "MAINFW_ENABLE_ADDR_PARITY_CHECKING", "MAINFW_UART_INIT",
+    "MAINFW_GPIO_INIT_LOCKS", "MAINFW_GPIO_INIT_DCSU", "MAINFW_BL_SPINLOCK_SETUP",
+    "MAINFW_LLOG_INIT", "MAINFW_MGR_REG_INIT", "MAINFW_MEM_PRINT_INIT",
+    "MAINFW_PRE_PMU_INIT", "MAINFW_GIC_LOCK_INIT", "MAINFW_APP_TIMER_LOCK_INIT",
+    "MAINFW_ULOG_INIT", "MAINFW_PMU_INIT", "MAINFW_SMBUS_INIT",
+    "MAINFW_INT_INIT", "MAINFW_RNG_INIT", "MAINFW_KERNEL_INIT_EARLY",
+    "MAINFW_PS_INIT_0", "MAINFW_PS_INIT_1", "MAINFW_PS_INIT_2",
+    "MAINFW_DRAM_SCRUB_WAIT", "MAINFW_DRAM_SCRUB_3",
+    "MAINFW_DRIVER_SUB_INIT", "MAINFW_TASK_CREATE",
+    "MAINFW_SAVE_AND_CLEAR_BRAM", "MAINFW_CORESIGHT_INIT",
+    # Totals
     "OVERALL_TOTAL",
-    "PBL",
-    "SBL",
-    "TBL",
-    "OVERALL",
+    # Short aliases kept for backward compatibility
+    "PBL", "SBL", "TBL", "OVERALL",
 }
 
 KNOWN_BOOT_TYPES = {
@@ -329,16 +349,21 @@ def is_deterministic_query(question):
 
 
 DASHBOARD_KEYWORDS = {
-    "host", "hostname", "metric", "boot", "spi", "eb0",
+    "host", "hostname", "metric", "metrics", "boot", "spi", "eb0",
     "sbl", "pbl", "tbl", "overall", "performance", "sku",
     "fastest", "slowest", "highest", "lowest", "average",
     "trend", "plot", "graph", "chart", "compare", "count",
 }
 
+# Matches any UPPER_CASE_WITH_UNDERSCORES token — treat as a metric name.
+_METRIC_PATTERN = re.compile(r"\b[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+\b")
+
 
 def is_dashboard_question(question: str) -> bool:
     """Return True when the question is likely about dashboard data."""
     lower = normalize_text(question)
+    if _METRIC_PATTERN.search(question):
+        return True
     return any(
         re.search(r"\b" + re.escape(kw) + r"\b", lower)
         for kw in DASHBOARD_KEYWORDS
