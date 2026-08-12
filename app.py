@@ -230,7 +230,7 @@ st.markdown("""
 <div class="app-header">
     <div>
         <h1>⚡ BootProfile AI Dashboard</h1>
-        <p>Ask questions about boot performance metrics, hosts, and timing data</p>
+        <p>Ask questions about bootprofile  performance metrics, hosts, and timing data</p>
     </div>
 </div>
 """, unsafe_allow_html=True)
