@@ -1,6 +1,6 @@
 mongo_ai_chatbot/
 ├── app.py                     ← Streamlit entry point
-├── config.py                  ← MongoDB + Ollama settings (env-var overridable)
+├── config.py                  ← MongoDB + Ollama + Logging settings (env-var overridable)
 ├── requirements.txt
 ├── workflow.txt
 ├── testing.txt
@@ -12,13 +12,20 @@ mongo_ai_chatbot/
 │   ├── query_builder.py       ← Query → Mongo aggregate pipeline
 │   ├── query_engine.py        ← Calls query_builder + mongo, returns results dict
 │   ├── query_validator.py     ← Validates + sanitises LLM JSON → trusted Query object
-│   └── mongo.py               ← MongoDB connection pool
+│   ├── mongo.py               ← MongoDB connection pool
+│   └── interaction_logger.py  ← Appends JSONL interaction records; file rotation; IP/host masking
 ├── ai/
 │   └── llm.py                 ← ask_llm() JSON query parser
 │                                 ask_llm_plain() conversational answer
 ├── ui/
 │   ├── formatter.py           ← Results → friendly table rows + summary text
 │   └── charts.py              ← Results → Streamlit line/bar/pie/box charts (plotly)
+├── scripts/
+│   └── summarize_logs.py      ← CLI: analyze logs for failures, off-topic questions, misroutes
+├── logs/
+│   └── chatbot_interactions.jsonl  ← JSONL interaction log (auto-rotated at 5 MB)
+├── img/
+│   └── PS.jpg                 ← Sidebar logo
 └── tests/
     └── test_smoke.py          ← Regression suite (pytest)
 
@@ -50,10 +57,17 @@ User question
                                           └──────────┬───────────┘
                                                      ▼
                                               Streamlit UI
+                                                     │
+                                                     ▼
+                                       core/interaction_logger.py
+                                         log_interaction(payload)
+                                      logs/chatbot_interactions.jsonl
 
 
 Sidebar
+- PS.jpg logo displayed at the top.
 - "Show debug info" checkbox gates: Detailed view, MongoDB Query, Debug expanders.
+- "Admin: view recent logs" checkbox shows log metrics + recent JSONL entries.
 
 
 Query Object (core/parser.py → Query)
@@ -79,6 +93,23 @@ Security (core/query_validator.py)
 - metric must be in KNOWN_METRICS or request is rejected with a clear error
 - value_field must be "min" or "max" — anything else is silently cleared to null
 - operation must be in ALLOWED_OPERATIONS — anything else defaults to "list"
+
+
+Interaction Logging (core/interaction_logger.py)
+- log_interaction(payload) appends a UTC-timestamped JSON record to QUERY_LOG_PATH.
+- Sensitive data masked before writing: IP addresses and hostnames (rc/lm-* patterns).
+- Thread-safe: uses _WRITE_LOCK.
+- File rotation: when log exceeds LOG_MAX_BYTES it is renamed to .1, .1→.2, …, oldest dropped.
+- Logging disabled by setting ENABLE_QUERY_LOGGING=0.
+- Three event types logged by app.py:
+    query_success  — dashboard query returned results
+    query_offtopic — question routed to LLM plain-text fallback
+    query_error    — unhandled exception (includes error type + message)
+
+Log Analysis (scripts/summarize_logs.py)
+- CLI: python scripts/summarize_logs.py [--path <file>] [--top <N>]
+- Reads JSONL log and reports: total records, failure count, off-topic count,
+  top N failed questions, top N off-topic questions, suspected misroutes.
 
 
 Routing Decision (is_dashboard_question)
@@ -116,5 +147,22 @@ Known Metrics (KNOWN_METRICS in core/parser.py)
 Notes
 - parser.py uses deterministic regex/keyword rules; LLM is only used for off-topic questions.
 - Metrics live in nested Mongo fields: data.<METRIC_NAME>.min / .max
-- config.py holds MongoDB and Ollama connection settings (env-var overridable).
+- config.py holds MongoDB, Ollama, and interaction-logging settings (env-var overridable).
 - tests/test_smoke.py is the automated regression suite, run with: python -m pytest tests/test_smoke.py -v
+
+
+config.py — Interaction Logging Settings
+  ENABLE_QUERY_LOGGING   1/0          toggle logging on/off (default 1)
+  QUERY_LOG_PATH         path         JSONL log file (default logs/chatbot_interactions.jsonl)
+  MASK_LOG_SENSITIVE     1/0          mask IPs and hostnames in logs (default 1)
+  ADMIN_LOG_TAIL_LINES   int          lines shown in Admin log viewer (default 100)
+  LOG_MAX_BYTES          int (bytes)  rotate log file when it exceeds this size (default 5 MB)
+  LOG_BACKUP_COUNT       int          number of rotated backup files kept (default 5)
+
+
+UI / app.py Features
+- Query result caching: @st.cache_data(ttl=60) on execute_cached() to reduce MongoDB load.
+- Context pills display active filters: 📊 Metric, 🖥 Host, 🔧 Boot Type, 💾 SKU, 📅 Date Range.
+- Charts shown automatically for operation=="chart"; collapsible expander for multi-row metrics.
+- Results table label shows row count.
+- Admin log viewer (sidebar): shows logged-event count, success/failure split, recent entries.
