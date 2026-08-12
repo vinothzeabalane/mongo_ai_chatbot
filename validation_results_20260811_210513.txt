@@ -1,0 +1,254 @@
+Validation Report
+Total questions: 93
+PASS: 84
+FAIL: 2
+OFFTOPIC: 7
+PASS with record_count=0: 6
+Deterministic route: 60
+LLM route: 24
+
+Detailed Results
+1. list all hosts
+   status=OFFTOPIC route=None op=None metric=None hostname=None sku=None bootType=None date_from=None date_to=None record_count=0
+   error=Here is the list of hosts:
+
+1. Host-01 (192.168.1.100)
+2. Host-02 (192.168.1.101)
+3. Host-03 (192.168.1.102)
+4. Host-04 (192.168.1.103)
+2. list all host details
+   status=PASS route=deterministic op=list metric=None hostname=None sku=None bootType=None date_from=None date_to=None record_count=10
+3. show all hosts
+   status=OFFTOPIC route=None op=None metric=None hostname=None sku=None bootType=None date_from=None date_to=None record_count=0
+   error=**Hosts List**
+
+Here is a list of all hosts currently managed by this system:
+
+1. **Host 1**: IP Address: 192.168.1.100, OS: Windows 10, Status: Online
+2. **Host 2**: IP Address: 192.168.1.101, OS: Linux, Status: Offline
+3. **Host 3**: IP Address: 192.168.1.102, OS: macOS, Status: Online
+
+Would you like to filter or sort the list by a specific criterion?
+4. what hosts do we have
+   status=OFFTOPIC route=None op=None metric=None hostname=None sku=None bootType=None date_from=None date_to=None record_count=0
+   error=**Current Hosts:** 
+
+1. `host-01` (192.168.1.100) - status: online, load: 25%
+2. `host-02` (192.168.1.101) - status: offline, load: N/A
+3. `host-03` (192.168.1.102) - status: running, load: 50%
+
+**Additional hosts available:** 
+
+4. `new-host-01` (192.168.1.103) - waiting for deployment
+5. which hosts are available
+   status=OFFTOPIC route=None op=None metric=None hostname=None sku=None bootType=None date_from=None date_to=None record_count=0
+   error=**Available Hosts**
+
+1. `web-01` (up for 99% of the time)
+2. `db-02` (up for 95% of the time)
+3. `api-03` (up for 98% of the time)
+
+**Note:** The uptime percentage indicates the host's reliability over the past hour.
+6. show unique hosts
+   status=OFFTOPIC route=None op=None metric=None hostname=None sku=None bootType=None date_from=None date_to=None record_count=0
+   error=**Unique Hosts**
+
+There are currently 120 unique hosts connected to your network.
+
+Would you like me to filter by:
+A) IP addresses only
+B) Hostnames only
+C) Both (default)
+D) Show details
+7. give me the host list
+   status=PASS route=deterministic op=list metric=None hostname=None sku=None bootType=None date_from=None date_to=None record_count=10
+8. show hostname sku and boot type
+   status=PASS route=deterministic op=list metric=None hostname=None sku=None bootType=None date_from=None date_to=None record_count=10
+9. show all host details
+   status=PASS route=deterministic op=list metric=None hostname=None sku=None bootType=None date_from=None date_to=None record_count=10
+10. which hostnames are present
+   status=OFFTOPIC route=None op=None metric=None hostname=None sku=None bootType=None date_from=None date_to=None record_count=0
+   error=**Hostnames:** 
+
+* host1
+* host2
+* host3
+
+Would you like me to filter or sort this list for you?
+11. what are the different hosts
+   status=OFFTOPIC route=None op=None metric=None hostname=None sku=None bootType=None date_from=None date_to=None record_count=0
+   error=Let me show you an overview of the hosts displayed on your dashboard:
+
+1. **Server**: Handles critical application services, such as database management, email servers, and file sharing.
+2. **Database**: Dedicated host for storing and managing data, ensuring efficient querying and retrieval.
+3. **Web Server**: Serves dynamic web content, including applications like WordPress, Joomla, or custom-built sites.
+4. **Mail Server**: Manages incoming and outgoing emails, including spam filtering and virus scanning.
+5. **File Server**: Stores shared files for collaboration, backups, or large datasets.
+
+Please let me know if you need more details about any of these hosts!
+12. which host has the highest SBL_TOTAL
+   status=PASS route=llm op=list metric=SBL_TOTAL hostname=highest sku=None bootType=None date_from=None date_to=None record_count=0
+13. which host has the lowest SBL_TOTAL
+   status=PASS route=llm op=lowest metric=SBL_TOTAL hostname=None sku=None bootType=None date_from=None date_to=None record_count=1
+14. which host has the highest overall time
+   status=PASS route=llm op=list metric=OVERALL_TOTAL hostname=highest sku=None bootType=None date_from=None date_to=None record_count=0
+15. which host has the lowest overall time
+   status=PASS route=llm op=lowest metric=OVERALL_TOTAL hostname=None sku=None bootType=None date_from=None date_to=None record_count=1
+16. what is the maximum SBL_TOTAL
+   status=PASS route=deterministic op=highest metric=SBL_TOTAL hostname=None sku=None bootType=None date_from=None date_to=None record_count=1
+17. what is the minimum SBL_TOTAL
+   status=PASS route=deterministic op=lowest metric=SBL_TOTAL hostname=None sku=None bootType=None date_from=None date_to=None record_count=1
+18. show highest SBL_TOTAL
+   status=PASS route=deterministic op=highest metric=SBL_TOTAL hostname=None sku=None bootType=None date_from=None date_to=None record_count=1
+19. show lowest SBL_TOTAL
+   status=PASS route=deterministic op=lowest metric=SBL_TOTAL hostname=None sku=None bootType=None date_from=None date_to=None record_count=1
+20. find the host with maximum OVERALL_TOTAL
+   status=PASS route=deterministic op=highest metric=OVERALL_TOTAL hostname=None sku=None bootType=None date_from=None date_to=None record_count=1
+21. find the host with minimum OVERALL_TOTAL
+   status=PASS route=deterministic op=lowest metric=OVERALL_TOTAL hostname=None sku=None bootType=None date_from=None date_to=None record_count=1
+22. which boot type has the highest SBL_TOTAL
+   status=PASS route=deterministic op=highest metric=SBL_TOTAL hostname=None sku=None bootType=None date_from=None date_to=None record_count=1
+23. which boot type has the lowest SBL_TOTAL
+   status=PASS route=deterministic op=lowest metric=SBL_TOTAL hostname=None sku=None bootType=None date_from=None date_to=None record_count=1
+24. which host has the highest SBL_TOTAL
+   status=PASS route=llm op=list metric=SBL_TOTAL hostname=highest sku=None bootType=None date_from=None date_to=None record_count=0
+25. which host has the lowest SBL_TOTAL
+   status=FAIL route=None op=None metric=None hostname=None sku=None bootType=None date_from=None date_to=None record_count=None
+   error=ReadTimeout: HTTPConnectionPool(host='127.0.0.1', port=11434): Read timed out. (read timeout=60)
+26. which host has the highest overall time
+   status=FAIL route=None op=None metric=None hostname=None sku=None bootType=None date_from=None date_to=None record_count=None
+   error=ReadTimeout: HTTPConnectionPool(host='127.0.0.1', port=11434): Read timed out. (read timeout=60)
+27. which host has the lowest overall time
+   status=PASS route=llm op=lowest metric=OVERALL_TOTAL hostname=None sku=None bootType=None date_from=None date_to=None record_count=1
+28. what is the maximum SBL_TOTAL
+   status=PASS route=deterministic op=highest metric=SBL_TOTAL hostname=None sku=None bootType=None date_from=None date_to=None record_count=1
+29. what is the minimum SBL_TOTAL
+   status=PASS route=deterministic op=lowest metric=SBL_TOTAL hostname=None sku=None bootType=None date_from=None date_to=None record_count=1
+30. show highest SBL_TOTAL
+   status=PASS route=deterministic op=highest metric=SBL_TOTAL hostname=None sku=None bootType=None date_from=None date_to=None record_count=1
+31. show lowest SBL_TOTAL
+   status=PASS route=deterministic op=lowest metric=SBL_TOTAL hostname=None sku=None bootType=None date_from=None date_to=None record_count=1
+32. find the host with maximum OVERALL_TOTAL
+   status=PASS route=deterministic op=highest metric=OVERALL_TOTAL hostname=None sku=None bootType=None date_from=None date_to=None record_count=1
+33. find the host with minimum OVERALL_TOTAL
+   status=PASS route=deterministic op=lowest metric=OVERALL_TOTAL hostname=None sku=None bootType=None date_from=None date_to=None record_count=1
+34. which boot type has the highest SBL_TOTAL
+   status=PASS route=deterministic op=highest metric=SBL_TOTAL hostname=None sku=None bootType=None date_from=None date_to=None record_count=1
+35. which boot type has the lowest SBL_TOTAL
+   status=PASS route=deterministic op=lowest metric=SBL_TOTAL hostname=None sku=None bootType=None date_from=None date_to=None record_count=1
+36. show performance of rc136-031-19-s3
+   status=PASS route=deterministic op=list metric=None hostname=rc136-031-19-s3 sku=None bootType=None date_from=None date_to=None record_count=2
+37. show metrics for rc136-031-19-s3
+   status=PASS route=deterministic op=list metric=None hostname=rc136-031-19-s3 sku=None bootType=None date_from=None date_to=None record_count=2
+38. show all metrics for rc136-031-19-s3
+   status=PASS route=deterministic op=list metric=None hostname=rc136-031-19-s3 sku=None bootType=None date_from=None date_to=None record_count=2
+39. show SBL_TOTAL for rc136-031-19-s3
+   status=PASS route=deterministic op=metric metric=SBL_TOTAL hostname=rc136-031-19-s3 sku=None bootType=None date_from=None date_to=None record_count=20
+40. show OVERALL_TOTAL for rc136-031-19-s3
+   status=PASS route=deterministic op=metric metric=OVERALL_TOTAL hostname=rc136-031-19-s3 sku=None bootType=None date_from=None date_to=None record_count=20
+41. show performance of rc136-031-19-s3 SPI
+   status=PASS route=deterministic op=list metric=None hostname=rc136-031-19-s3 sku=None bootType=SPI date_from=None date_to=None record_count=1
+42. show performance of rc136-031-19-s3 EB0
+   status=PASS route=deterministic op=list metric=None hostname=rc136-031-19-s3 sku=None bootType=EB0 date_from=None date_to=None record_count=1
+43. show performance of rc136-031-19-s3
+   status=PASS route=deterministic op=list metric=None hostname=rc136-031-19-s3 sku=None bootType=None date_from=None date_to=None record_count=2
+44. show metrics for rc136-031-19-s3
+   status=PASS route=deterministic op=list metric=None hostname=rc136-031-19-s3 sku=None bootType=None date_from=None date_to=None record_count=2
+45. show all metrics for rc136-031-19-s3
+   status=PASS route=deterministic op=list metric=None hostname=rc136-031-19-s3 sku=None bootType=None date_from=None date_to=None record_count=2
+46. show SBL_TOTAL for rc136-031-19-s3
+   status=PASS route=deterministic op=metric metric=SBL_TOTAL hostname=rc136-031-19-s3 sku=None bootType=None date_from=None date_to=None record_count=20
+47. show OVERALL_TOTAL for rc136-031-19-s3
+   status=PASS route=deterministic op=metric metric=OVERALL_TOTAL hostname=rc136-031-19-s3 sku=None bootType=None date_from=None date_to=None record_count=20
+48. show performance of rc136-031-19-s3 SPI
+   status=PASS route=deterministic op=list metric=None hostname=rc136-031-19-s3 sku=None bootType=SPI date_from=None date_to=None record_count=1
+49. show performance of rc136-031-19-s3 EB0
+   status=PASS route=deterministic op=list metric=None hostname=rc136-031-19-s3 sku=None bootType=EB0 date_from=None date_to=None record_count=1
+50. show EB0 hosts
+   status=PASS route=deterministic op=list metric=None hostname=None sku=None bootType=EB0 date_from=None date_to=None record_count=5
+51. show SPI hosts
+   status=PASS route=deterministic op=list metric=None hostname=None sku=None bootType=SPI date_from=None date_to=None record_count=5
+52. show SBL_TOTAL for EB0
+   status=PASS route=deterministic op=metric metric=SBL_TOTAL hostname=None sku=None bootType=EB0 date_from=None date_to=None record_count=32
+53. show SBL_TOTAL for SPI
+   status=PASS route=deterministic op=metric metric=SBL_TOTAL hostname=None sku=None bootType=SPI date_from=None date_to=None record_count=32
+54. compare EB0 and SPI
+   status=PASS route=llm op=list metric=None hostname=None sku=None bootType=None date_from=None date_to=None record_count=10
+55. which is faster EB0 or SPI
+   status=PASS route=llm op=list metric=None hostname=None sku=None bootType=None date_from=None date_to=None record_count=10
+56. which boot type has the highest overall time
+   status=PASS route=llm op=list metric=OVERALL_TOTAL hostname=None sku=None bootType=None date_from=None date_to=None record_count=64
+57. which boot type has the lowest overall time
+   status=PASS route=llm op=lowest metric=OVERALL_TOTAL hostname=None sku=None bootType=None date_from=None date_to=None record_count=1
+58. show SBL_TOTAL on 2026-07-31
+   status=PASS route=deterministic op=metric metric=SBL_TOTAL hostname=None sku=None bootType=None date_from=2026-07-31 date_to=2026-07-31 record_count=6
+59. show SBL_TOTAL for 2026-08-01
+   status=PASS route=deterministic op=metric metric=SBL_TOTAL hostname=None sku=None bootType=None date_from=2026-08-01 date_to=2026-08-01 record_count=2
+60. show performance on 2026-07-31
+   status=PASS route=deterministic op=list metric=None hostname=None sku=None bootType=None date_from=2026-07-31 date_to=2026-07-31 record_count=10
+61. show OVERALL_TOTAL on 2026-08-01
+   status=PASS route=deterministic op=metric metric=OVERALL_TOTAL hostname=None sku=None bootType=None date_from=2026-08-01 date_to=2026-08-01 record_count=2
+62. compare hosts
+   status=PASS route=llm op=list metric=None hostname=None sku=None bootType=None date_from=None date_to=None record_count=10
+63. compare all hosts by SBL_TOTAL
+   status=PASS route=llm op=list metric=SBL_TOTAL hostname=None sku=None bootType=None date_from=None date_to=None record_count=64
+64. compare EB0 and SPI
+   status=PASS route=llm op=list metric=None hostname=None sku=None bootType=None date_from=None date_to=None record_count=10
+65. compare SKUs
+   status=PASS route=llm op=list metric=None hostname=None sku=None bootType=None date_from=None date_to=None record_count=10
+66. show SBL_TOTAL by host
+   status=PASS route=deterministic op=metric metric=SBL_TOTAL hostname=None sku=None bootType=None date_from=None date_to=None record_count=64
+67. show SBL_TOTAL by boot type
+   status=PASS route=deterministic op=metric metric=SBL_TOTAL hostname=None sku=None bootType=None date_from=None date_to=None record_count=64
+68. show SBL_TOTAL by SKU
+   status=PASS route=deterministic op=metric metric=SBL_TOTAL hostname=None sku=None bootType=None date_from=None date_to=None record_count=64
+69. group SBL_TOTAL by hostname
+   status=PASS route=deterministic op=metric metric=SBL_TOTAL hostname=None sku=None bootType=None date_from=None date_to=None record_count=64
+70. group OVERALL_TOTAL by boot type
+   status=PASS route=deterministic op=metric metric=OVERALL_TOTAL hostname=None sku=None bootType=None date_from=None date_to=None record_count=64
+71. show SBL_TOTAL trend
+   status=PASS route=deterministic op=chart metric=SBL_TOTAL hostname=None sku=None bootType=None date_from=None date_to=None record_count=64
+72. show SBL_TOTAL trend for rc136-031-19-s3
+   status=PASS route=deterministic op=chart metric=SBL_TOTAL hostname=rc136-031-19-s3 sku=None bootType=None date_from=None date_to=None record_count=20
+73. show OVERALL_TOTAL trend
+   status=PASS route=deterministic op=chart metric=OVERALL_TOTAL hostname=None sku=None bootType=None date_from=None date_to=None record_count=64
+74. how has SBL_TOTAL changed over time
+   status=PASS route=deterministic op=metric metric=SBL_TOTAL hostname=None sku=None bootType=None date_from=None date_to=None record_count=64
+75. show performance over time
+   status=PASS route=llm op=list metric=None hostname=None sku=None bootType=None date_from=None date_to=None record_count=10
+76. show daily SBL_TOTAL
+   status=PASS route=deterministic op=metric metric=SBL_TOTAL hostname=None sku=None bootType=None date_from=None date_to=None record_count=64
+77. plot SBL_TOTAL
+   status=PASS route=deterministic op=chart metric=SBL_TOTAL hostname=None sku=None bootType=None date_from=None date_to=None record_count=64
+78. plot SBL_TOTAL for rc136-031-19-s3
+   status=PASS route=deterministic op=chart metric=SBL_TOTAL hostname=rc136-031-19-s3 sku=None bootType=None date_from=None date_to=None record_count=20
+79. plot OVERALL_TOTAL over time
+   status=PASS route=deterministic op=chart metric=OVERALL_TOTAL hostname=None sku=None bootType=None date_from=None date_to=None record_count=64
+80. graph SBL_TOTAL by date
+   status=PASS route=deterministic op=chart metric=SBL_TOTAL hostname=None sku=None bootType=None date_from=None date_to=None record_count=64
+81. show SBL_TOTAL trend graph
+   status=PASS route=deterministic op=chart metric=SBL_TOTAL hostname=None sku=None bootType=None date_from=None date_to=None record_count=64
+82. plot EB0 vs SPI
+   status=PASS route=llm op=chart metric=None hostname=None sku=None bootType=None date_from=None date_to=None record_count=64
+83. plot SBL_TOTAL for all hosts
+   status=PASS route=deterministic op=chart metric=SBL_TOTAL hostname=None sku=None bootType=None date_from=None date_to=None record_count=64
+84. visualize OVERALL_TOTAL
+   status=PASS route=deterministic op=metric metric=OVERALL_TOTAL hostname=None sku=None bootType=None date_from=None date_to=None record_count=64
+85. create a graph of SBL_TOTAL
+   status=PASS route=deterministic op=chart metric=SBL_TOTAL hostname=None sku=None bootType=None date_from=None date_to=None record_count=64
+86. which host is fastest
+   status=PASS route=llm op=list metric=None hostname=fastest sku=None bootType=None date_from=None date_to=None record_count=0
+87. which host is slowest
+   status=PASS route=llm op=list metric=None hostname=None sku=None bootType=None date_from=None date_to=None record_count=10
+88. who is fastest
+   status=PASS route=llm op=lowest metric=None hostname=None sku=None bootType=None date_from=None date_to=None record_count=0
+89. who is slowest
+   status=PASS route=llm op=highest metric=None hostname=None sku=None bootType=None date_from=None date_to=None record_count=0
+90. what machine is fastest
+   status=PASS route=llm op=list metric=None hostname=None sku=None bootType=None date_from=None date_to=None record_count=10
+91. what machine is slowest
+   status=PASS route=llm op=list metric=None hostname=None sku=None bootType=None date_from=None date_to=None record_count=10
+92. which server has the highest time
+   status=PASS route=llm op=list metric=OVERALL_TOTAL hostname=None sku=None bootType=None date_from=None date_to=None record_count=64
+93. which server has the lowest time
+   status=PASS route=llm op=lowest metric=OVERALL_TOTAL hostname=None sku=None bootType=None date_from=None date_to=None record_count=1

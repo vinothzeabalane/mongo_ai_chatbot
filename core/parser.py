@@ -455,6 +455,27 @@ def is_simple_dashboard_question(question: str) -> bool:
     ):
         return False
 
+    # Hostname inventory/list intents should stay deterministic.
+    # Example: "list all unique hostname details".
+    host_words = ["host", "hosts", "hostname"]
+    host_list_words = [
+        "list",
+        "show",
+        "display",
+        "give",
+        "get",
+        "all",
+        "unique",
+        "detail",
+        "details",
+        "known",
+    ]
+    if (
+        any(re.search(r"\b" + re.escape(word) + r"\b", q) for word in host_words)
+        and any(re.search(r"\b" + re.escape(word) + r"\b", q) for word in host_list_words)
+    ):
+        return True
+
     # Existing parser is reliable for explicit metric names.
     if _METRIC_PATTERN.search(question):
         return True

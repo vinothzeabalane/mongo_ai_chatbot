@@ -1,4 +1,6 @@
 
+import re
+
 from core.parser import (
     Query,
     KNOWN_METRICS,
@@ -26,6 +28,17 @@ _FORBIDDEN_OPERATORS = {
     "$out", "$merge", "$graphLookup", "mapreduce",
 }
 
+_GENERIC_HOSTNAME_TOKENS = {
+    "all",
+    "known",
+    "detail",
+    "details",
+    "host",
+    "hosts",
+    "hostname",
+    "unique",
+}
+
 
 def _clean(value):
     if value is None:
@@ -40,6 +53,23 @@ def _clean(value):
         return None
 
     return value
+
+
+def _sanitize_hostname(value):
+    cleaned = _clean(value)
+
+    if not cleaned:
+        return None
+
+    lowered = cleaned.lower()
+    if lowered in _GENERIC_HOSTNAME_TOKENS:
+        return None
+
+    words = re.findall(r"[a-z0-9_-]+", lowered)
+    if words and all(word in _GENERIC_HOSTNAME_TOKENS for word in words):
+        return None
+
+    return cleaned
 
 
 def validate_llm_query(data, original_question):
@@ -81,7 +111,7 @@ def validate_llm_query(data, original_question):
                 f"Unknown metric from LLM: {metric}"
             )
 
-    hostname = _clean(
+    hostname = _sanitize_hostname(
         data.get("hostname")
     )
 

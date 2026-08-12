@@ -2,6 +2,7 @@ import unittest
 
 from core.parser import parse_question
 from core.query_engine import execute
+from core.hybrid_parser import parse_hybrid
 
 
 PARSER_CASES = [
@@ -144,6 +145,20 @@ class IntegrationSmokeTests(unittest.TestCase):
             "test",
         )
         self.assertIsNone(q.value_field)
+
+    def test_hybrid_unique_hostname_details_routes_deterministic(self):
+        query, meta = parse_hybrid("list all unique hostname details")
+        self.assertEqual(meta["path"], "deterministic")
+        self.assertEqual(query.operation, "list")
+        self.assertIsNone(query.hostname)
+
+    def test_validator_sanitizes_generic_hostname(self):
+        from core.query_validator import validate_llm_query
+        q = validate_llm_query(
+            {"operation": "list", "hostname": "unique"},
+            "list all unique hostname details",
+        )
+        self.assertIsNone(q.hostname)
 
 
 

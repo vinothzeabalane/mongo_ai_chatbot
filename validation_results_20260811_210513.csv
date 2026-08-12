@@ -1,0 +1,143 @@
+index,question,status,route,llm_used,operation,metric,hostname,sku,bootType,date_from,date_to,record_count,error
+1,list all hosts,OFFTOPIC,,,,,,,,,,0,"Here is the list of hosts:
+
+1. Host-01 (192.168.1.100)
+2. Host-02 (192.168.1.101)
+3. Host-03 (192.168.1.102)
+4. Host-04 (192.168.1.103)"
+2,list all host details,PASS,deterministic,False,list,,,,,,,10,
+3,show all hosts,OFFTOPIC,,,,,,,,,,0,"**Hosts List**
+
+Here is a list of all hosts currently managed by this system:
+
+1. **Host 1**: IP Address: 192.168.1.100, OS: Windows 10, Status: Online
+2. **Host 2**: IP Address: 192.168.1.101, OS: Linux, Status: Offline
+3. **Host 3**: IP Address: 192.168.1.102, OS: macOS, Status: Online
+
+Would you like to filter or sort the list by a specific criterion?"
+4,what hosts do we have,OFFTOPIC,,,,,,,,,,0,"**Current Hosts:** 
+
+1. `host-01` (192.168.1.100) - status: online, load: 25%
+2. `host-02` (192.168.1.101) - status: offline, load: N/A
+3. `host-03` (192.168.1.102) - status: running, load: 50%
+
+**Additional hosts available:** 
+
+4. `new-host-01` (192.168.1.103) - waiting for deployment"
+5,which hosts are available,OFFTOPIC,,,,,,,,,,0,"**Available Hosts**
+
+1. `web-01` (up for 99% of the time)
+2. `db-02` (up for 95% of the time)
+3. `api-03` (up for 98% of the time)
+
+**Note:** The uptime percentage indicates the host's reliability over the past hour."
+6,show unique hosts,OFFTOPIC,,,,,,,,,,0,"**Unique Hosts**
+
+There are currently 120 unique hosts connected to your network.
+
+Would you like me to filter by:
+A) IP addresses only
+B) Hostnames only
+C) Both (default)
+D) Show details"
+7,give me the host list,PASS,deterministic,False,list,,,,,,,10,
+8,show hostname sku and boot type,PASS,deterministic,False,list,,,,,,,10,
+9,show all host details,PASS,deterministic,False,list,,,,,,,10,
+10,which hostnames are present,OFFTOPIC,,,,,,,,,,0,"**Hostnames:** 
+
+* host1
+* host2
+* host3
+
+Would you like me to filter or sort this list for you?"
+11,what are the different hosts,OFFTOPIC,,,,,,,,,,0,"Let me show you an overview of the hosts displayed on your dashboard:
+
+1. **Server**: Handles critical application services, such as database management, email servers, and file sharing.
+2. **Database**: Dedicated host for storing and managing data, ensuring efficient querying and retrieval.
+3. **Web Server**: Serves dynamic web content, including applications like WordPress, Joomla, or custom-built sites.
+4. **Mail Server**: Manages incoming and outgoing emails, including spam filtering and virus scanning.
+5. **File Server**: Stores shared files for collaboration, backups, or large datasets.
+
+Please let me know if you need more details about any of these hosts!"
+12,which host has the highest SBL_TOTAL,PASS,llm,True,list,SBL_TOTAL,highest,,,,,0,
+13,which host has the lowest SBL_TOTAL,PASS,llm,True,lowest,SBL_TOTAL,,,,,,1,
+14,which host has the highest overall time,PASS,llm,True,list,OVERALL_TOTAL,highest,,,,,0,
+15,which host has the lowest overall time,PASS,llm,True,lowest,OVERALL_TOTAL,,,,,,1,
+16,what is the maximum SBL_TOTAL,PASS,deterministic,False,highest,SBL_TOTAL,,,,,,1,
+17,what is the minimum SBL_TOTAL,PASS,deterministic,False,lowest,SBL_TOTAL,,,,,,1,
+18,show highest SBL_TOTAL,PASS,deterministic,False,highest,SBL_TOTAL,,,,,,1,
+19,show lowest SBL_TOTAL,PASS,deterministic,False,lowest,SBL_TOTAL,,,,,,1,
+20,find the host with maximum OVERALL_TOTAL,PASS,deterministic,False,highest,OVERALL_TOTAL,,,,,,1,
+21,find the host with minimum OVERALL_TOTAL,PASS,deterministic,False,lowest,OVERALL_TOTAL,,,,,,1,
+22,which boot type has the highest SBL_TOTAL,PASS,deterministic,False,highest,SBL_TOTAL,,,,,,1,
+23,which boot type has the lowest SBL_TOTAL,PASS,deterministic,False,lowest,SBL_TOTAL,,,,,,1,
+24,which host has the highest SBL_TOTAL,PASS,llm,True,list,SBL_TOTAL,highest,,,,,0,
+25,which host has the lowest SBL_TOTAL,FAIL,,,,,,,,,,,"ReadTimeout: HTTPConnectionPool(host='127.0.0.1', port=11434): Read timed out. (read timeout=60)"
+26,which host has the highest overall time,FAIL,,,,,,,,,,,"ReadTimeout: HTTPConnectionPool(host='127.0.0.1', port=11434): Read timed out. (read timeout=60)"
+27,which host has the lowest overall time,PASS,llm,True,lowest,OVERALL_TOTAL,,,,,,1,
+28,what is the maximum SBL_TOTAL,PASS,deterministic,False,highest,SBL_TOTAL,,,,,,1,
+29,what is the minimum SBL_TOTAL,PASS,deterministic,False,lowest,SBL_TOTAL,,,,,,1,
+30,show highest SBL_TOTAL,PASS,deterministic,False,highest,SBL_TOTAL,,,,,,1,
+31,show lowest SBL_TOTAL,PASS,deterministic,False,lowest,SBL_TOTAL,,,,,,1,
+32,find the host with maximum OVERALL_TOTAL,PASS,deterministic,False,highest,OVERALL_TOTAL,,,,,,1,
+33,find the host with minimum OVERALL_TOTAL,PASS,deterministic,False,lowest,OVERALL_TOTAL,,,,,,1,
+34,which boot type has the highest SBL_TOTAL,PASS,deterministic,False,highest,SBL_TOTAL,,,,,,1,
+35,which boot type has the lowest SBL_TOTAL,PASS,deterministic,False,lowest,SBL_TOTAL,,,,,,1,
+36,show performance of rc136-031-19-s3,PASS,deterministic,False,list,,rc136-031-19-s3,,,,,2,
+37,show metrics for rc136-031-19-s3,PASS,deterministic,False,list,,rc136-031-19-s3,,,,,2,
+38,show all metrics for rc136-031-19-s3,PASS,deterministic,False,list,,rc136-031-19-s3,,,,,2,
+39,show SBL_TOTAL for rc136-031-19-s3,PASS,deterministic,False,metric,SBL_TOTAL,rc136-031-19-s3,,,,,20,
+40,show OVERALL_TOTAL for rc136-031-19-s3,PASS,deterministic,False,metric,OVERALL_TOTAL,rc136-031-19-s3,,,,,20,
+41,show performance of rc136-031-19-s3 SPI,PASS,deterministic,False,list,,rc136-031-19-s3,,SPI,,,1,
+42,show performance of rc136-031-19-s3 EB0,PASS,deterministic,False,list,,rc136-031-19-s3,,EB0,,,1,
+43,show performance of rc136-031-19-s3,PASS,deterministic,False,list,,rc136-031-19-s3,,,,,2,
+44,show metrics for rc136-031-19-s3,PASS,deterministic,False,list,,rc136-031-19-s3,,,,,2,
+45,show all metrics for rc136-031-19-s3,PASS,deterministic,False,list,,rc136-031-19-s3,,,,,2,
+46,show SBL_TOTAL for rc136-031-19-s3,PASS,deterministic,False,metric,SBL_TOTAL,rc136-031-19-s3,,,,,20,
+47,show OVERALL_TOTAL for rc136-031-19-s3,PASS,deterministic,False,metric,OVERALL_TOTAL,rc136-031-19-s3,,,,,20,
+48,show performance of rc136-031-19-s3 SPI,PASS,deterministic,False,list,,rc136-031-19-s3,,SPI,,,1,
+49,show performance of rc136-031-19-s3 EB0,PASS,deterministic,False,list,,rc136-031-19-s3,,EB0,,,1,
+50,show EB0 hosts,PASS,deterministic,False,list,,,,EB0,,,5,
+51,show SPI hosts,PASS,deterministic,False,list,,,,SPI,,,5,
+52,show SBL_TOTAL for EB0,PASS,deterministic,False,metric,SBL_TOTAL,,,EB0,,,32,
+53,show SBL_TOTAL for SPI,PASS,deterministic,False,metric,SBL_TOTAL,,,SPI,,,32,
+54,compare EB0 and SPI,PASS,llm,True,list,,,,,,,10,
+55,which is faster EB0 or SPI,PASS,llm,True,list,,,,,,,10,
+56,which boot type has the highest overall time,PASS,llm,True,list,OVERALL_TOTAL,,,,,,64,
+57,which boot type has the lowest overall time,PASS,llm,True,lowest,OVERALL_TOTAL,,,,,,1,
+58,show SBL_TOTAL on 2026-07-31,PASS,deterministic,False,metric,SBL_TOTAL,,,,2026-07-31,2026-07-31,6,
+59,show SBL_TOTAL for 2026-08-01,PASS,deterministic,False,metric,SBL_TOTAL,,,,2026-08-01,2026-08-01,2,
+60,show performance on 2026-07-31,PASS,deterministic,False,list,,,,,2026-07-31,2026-07-31,10,
+61,show OVERALL_TOTAL on 2026-08-01,PASS,deterministic,False,metric,OVERALL_TOTAL,,,,2026-08-01,2026-08-01,2,
+62,compare hosts,PASS,llm,True,list,,,,,,,10,
+63,compare all hosts by SBL_TOTAL,PASS,llm,True,list,SBL_TOTAL,,,,,,64,
+64,compare EB0 and SPI,PASS,llm,True,list,,,,,,,10,
+65,compare SKUs,PASS,llm,True,list,,,,,,,10,
+66,show SBL_TOTAL by host,PASS,deterministic,False,metric,SBL_TOTAL,,,,,,64,
+67,show SBL_TOTAL by boot type,PASS,deterministic,False,metric,SBL_TOTAL,,,,,,64,
+68,show SBL_TOTAL by SKU,PASS,deterministic,False,metric,SBL_TOTAL,,,,,,64,
+69,group SBL_TOTAL by hostname,PASS,deterministic,False,metric,SBL_TOTAL,,,,,,64,
+70,group OVERALL_TOTAL by boot type,PASS,deterministic,False,metric,OVERALL_TOTAL,,,,,,64,
+71,show SBL_TOTAL trend,PASS,deterministic,False,chart,SBL_TOTAL,,,,,,64,
+72,show SBL_TOTAL trend for rc136-031-19-s3,PASS,deterministic,False,chart,SBL_TOTAL,rc136-031-19-s3,,,,,20,
+73,show OVERALL_TOTAL trend,PASS,deterministic,False,chart,OVERALL_TOTAL,,,,,,64,
+74,how has SBL_TOTAL changed over time,PASS,deterministic,False,metric,SBL_TOTAL,,,,,,64,
+75,show performance over time,PASS,llm,True,list,,,,,,,10,
+76,show daily SBL_TOTAL,PASS,deterministic,False,metric,SBL_TOTAL,,,,,,64,
+77,plot SBL_TOTAL,PASS,deterministic,False,chart,SBL_TOTAL,,,,,,64,
+78,plot SBL_TOTAL for rc136-031-19-s3,PASS,deterministic,False,chart,SBL_TOTAL,rc136-031-19-s3,,,,,20,
+79,plot OVERALL_TOTAL over time,PASS,deterministic,False,chart,OVERALL_TOTAL,,,,,,64,
+80,graph SBL_TOTAL by date,PASS,deterministic,False,chart,SBL_TOTAL,,,,,,64,
+81,show SBL_TOTAL trend graph,PASS,deterministic,False,chart,SBL_TOTAL,,,,,,64,
+82,plot EB0 vs SPI,PASS,llm,True,chart,,,,,,,64,
+83,plot SBL_TOTAL for all hosts,PASS,deterministic,False,chart,SBL_TOTAL,,,,,,64,
+84,visualize OVERALL_TOTAL,PASS,deterministic,False,metric,OVERALL_TOTAL,,,,,,64,
+85,create a graph of SBL_TOTAL,PASS,deterministic,False,chart,SBL_TOTAL,,,,,,64,
+86,which host is fastest,PASS,llm,True,list,,fastest,,,,,0,
+87,which host is slowest,PASS,llm,True,list,,,,,,,10,
+88,who is fastest,PASS,llm,True,lowest,,,,,,,0,
+89,who is slowest,PASS,llm,True,highest,,,,,,,0,
+90,what machine is fastest,PASS,llm,True,list,,,,,,,10,
+91,what machine is slowest,PASS,llm,True,list,,,,,,,10,
+92,which server has the highest time,PASS,llm,True,list,OVERALL_TOTAL,,,,,,64,
+93,which server has the lowest time,PASS,llm,True,lowest,OVERALL_TOTAL,,,,,,1,
