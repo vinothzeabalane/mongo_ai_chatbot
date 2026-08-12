@@ -4,7 +4,13 @@ import re
 from datetime import datetime, timezone
 from threading import Lock
 
-from config import ENABLE_QUERY_LOGGING, QUERY_LOG_PATH, MASK_LOG_SENSITIVE
+from config import (
+    ENABLE_QUERY_LOGGING,
+    QUERY_LOG_PATH,
+    MASK_LOG_SENSITIVE,
+    LOG_MAX_BYTES,
+    LOG_BACKUP_COUNT,
+)
 
 
 _WRITE_LOCK = Lock()
@@ -61,5 +67,24 @@ def log_interaction(payload):
     line = json.dumps(record, ensure_ascii=True, default=str)
 
     with _WRITE_LOCK:
+        _rotate_if_needed(QUERY_LOG_PATH, LOG_MAX_BYTES, LOG_BACKUP_COUNT)
         with open(QUERY_LOG_PATH, "a", encoding="utf-8") as f:
             f.write(line + "\n")
+
+
+def _rotate_if_needed(path, max_bytes, backup_count):
+    """Rotate the log file when it exceeds max_bytes."""
+    try:
+        if os.path.getsize(path) < max_bytes:
+            return
+    except FileNotFoundError:
+        return
+
+    # Shift existing backups: .4 -> drop, .3 -> .4, ..., .1 -> .2, base -> .1
+    for i in range(backup_count - 1, 0, -1):
+        src = f"{path}.{i}"
+        dst = f"{path}.{i + 1}"
+        if os.path.exists(src):
+            os.replace(src, dst)
+
+    os.replace(path, f"{path}.1")

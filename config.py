@@ -68,3 +68,19 @@ ADMIN_LOG_TAIL_LINES = int(
         "100",
     )
 )
+
+# Max size per log file before rotation (bytes); default 5 MB
+LOG_MAX_BYTES = int(
+    os.getenv(
+        "LOG_MAX_BYTES",
+        str(5 * 1024 * 1024),
+    )
+)
+
+# Number of rotated backup files to keep
+LOG_BACKUP_COUNT = int(
+    os.getenv(
+        "LOG_BACKUP_COUNT",
+        "5",
+    )
+)
