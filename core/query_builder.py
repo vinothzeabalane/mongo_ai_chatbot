@@ -243,10 +243,15 @@ def build_extreme_pipeline(query: Query):
         }
     ]
 
-    value_field = "min_seconds"
-
-    if query.operation == "highest":
+    # value_field on Query takes precedence; fall back to operation-based default.
+    if query.value_field == "min":
+        value_field = "min_seconds"
+    elif query.value_field == "max":
         value_field = "max_seconds"
+    elif query.operation == "highest":
+        value_field = "max_seconds"
+    else:
+        value_field = "min_seconds"
 
     pipeline.extend([
         {

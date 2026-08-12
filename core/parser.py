@@ -79,6 +79,8 @@ class Query:
     date_to: Optional[str] = None
     group_by: Optional[str] = None
     limit: int = DEFAULT_LIMIT
+    # "min" or "max" — which timing field to sort/aggregate on
+    value_field: Optional[str] = None
 
     def to_dict(self):
         return asdict(self)
@@ -256,6 +258,7 @@ def _contains_phrase(text: str, phrases) -> bool:
 def detect_operation(question: str, metric: Optional[str]) -> str:
     q = normalize_text(question)
 
+    # fastest/slowest → explicit value_field semantics handled in parse_question
     if _contains_word(q, ["fastest", "best"]):
         return "lowest"
 
@@ -292,6 +295,25 @@ def detect_operation(question: str, metric: Optional[str]) -> str:
     return "list"
 
 
+def _detect_value_field(question: str, operation: str) -> Optional[str]:
+    """Determine which timing column to sort/aggregate on."""
+    q = normalize_text(question)
+
+    # fastest/slowest → use max (worst-case time = representative performance)
+    if _contains_word(q, ["fastest", "best", "slowest", "worst"]):
+        return "max"
+
+    # explicit minimum/lowest → use min column
+    if _contains_word(q, ["minimum", "min", "lowest", "smallest"]) and operation == "lowest":
+        return "min"
+
+    # default: use max for extreme/average operations
+    if operation in {"highest", "lowest", "average"}:
+        return "max"
+
+    return None
+
+
 # ============================================================
 # Main parser
 # ============================================================
@@ -309,6 +331,7 @@ def parse_question(question: str) -> Query:
 
     operation = detect_operation(question, metric)
     metric = infer_metric(question, operation, metric)
+    value_field = _detect_value_field(question, operation)
 
     return Query(
         question=question,
@@ -321,6 +344,7 @@ def parse_question(question: str) -> Query:
         date_to=date_to,
         group_by=group_by,
         limit=limit,
+        value_field=value_field,
     )
 
 

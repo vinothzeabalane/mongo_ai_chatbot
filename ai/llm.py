@@ -154,8 +154,17 @@ The JSON must have exactly these fields:
   "date_from": null,
   "date_to": null,
   "group_by": null,
+  "value_field": null,
   "limit": 100
 }
+
+For value_field:
+- "fastest" or "best"  → operation=lowest,  value_field="max"
+- "slowest" or "worst" → operation=highest, value_field="max"
+- "lowest minimum"     → operation=lowest,  value_field="min"
+- "highest maximum"    → operation=highest, value_field="max"
+- default for average/extreme → value_field="max"
+- leave null for list/metric/count/chart
 
 Never return MongoDB syntax.
 Never return Python.

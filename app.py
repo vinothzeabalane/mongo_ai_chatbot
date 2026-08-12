@@ -136,6 +136,16 @@ st.markdown("""
 
 
 # ============================================================
+# Session state initialisation
+# ============================================================
+
+if "question_input" not in st.session_state:
+    st.session_state["question_input"] = ""
+if "result_ready" not in st.session_state:
+    st.session_state["result_ready"] = False
+
+
+# ============================================================
 # Cached execution
 # ============================================================
 
@@ -200,15 +210,23 @@ st.markdown("""
 # ============================================================
 
 with st.form("question_form", clear_on_submit=False):
-    col_input, col_btn = st.columns([5, 1])
+    col_input, col_ask, col_clear = st.columns([5, 1, 1])
     with col_input:
         question = st.text_input(
             "Your question",
             placeholder="e.g. Which host has the slowest OVERALL_TOTAL for SPI?",
             label_visibility="collapsed",
+            key="question_input",
         )
-    with col_btn:
+    with col_ask:
         submitted = st.form_submit_button("Ask ▶", use_container_width=True)
+    with col_clear:
+        cleared = st.form_submit_button("✕ Clear", use_container_width=True)
+
+if cleared:
+    st.session_state.pop("question_input", None)
+    st.session_state["result_ready"] = False
+    st.rerun()
 
 
 # ============================================================
@@ -265,12 +283,13 @@ if submitted and question:
                 unsafe_allow_html=True,
             )
 
-        # ── Stat tiles ────────────────────────────────────────
-        c1, c2, c3, c4 = st.columns(4)
-        c1.metric("Records", result["record_count"])
-        c2.metric("Operation", q.get("operation", "list").title())
-        c3.metric("Metric", (q.get("metric") or "All").replace("_", " "))
-        c4.metric("Parser", routing.get("path", "—").title())
+        # ── Stat tiles (debug only) ───────────────────────────
+        if show_debug:
+            c1, c2, c3, c4 = st.columns(4)
+            c1.metric("Records", result["record_count"])
+            c2.metric("Operation", q.get("operation", "list").title())
+            c3.metric("Metric", (q.get("metric") or "All").replace("_", " "))
+            c4.metric("Parser", routing.get("path", "—").title())
 
         # ── Chart ─────────────────────────────────────────────
         # Show automatically for explicit chart/trend requests.

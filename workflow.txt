@@ -18,7 +18,7 @@ mongo_ai_chatbot/
 │                                 ask_llm_plain() conversational answer
 ├── ui/
 │   ├── formatter.py           ← Results → friendly table rows + summary text
-│   └── charts.py              ← Results → Streamlit line chart
+│   └── charts.py              ← Results → Streamlit line/bar/pie/box charts (plotly)
 └── tests/
     └── test_smoke.py          ← Regression suite (pytest)
 
@@ -54,6 +54,31 @@ User question
 
 Sidebar
 - "Show debug info" checkbox gates: Detailed view, MongoDB Query, Debug expanders.
+
+
+Query Object (core/parser.py → Query)
+  field        description
+  operation    list | metric | lowest | highest | average | count | chart
+  metric       e.g. SBL_TOTAL, OVERALL_TOTAL, MAINFW_CORESIGHT_INIT
+  hostname     e.g. rc136-031-19-s3
+  bootType     EB0 | SPI
+  sku          e.g. 60TB
+  date_from    YYYY-MM-DD
+  date_to      YYYY-MM-DD
+  group_by     hostname | bootType | sku | date
+  limit        1–500 (default 100)
+  value_field  "min" | "max" — which timing column to sort/aggregate on
+                 fastest/slowest  → max   (sort on max_seconds)
+                 lowest minimum   → min   (sort on min_seconds)
+                 highest/average  → max
+
+
+Security (core/query_validator.py)
+- LLM response scanned for forbidden Mongo operators before processing:
+  $where, $lookup, $function, $accumulator, $out, $merge, $graphLookup, mapreduce
+- metric must be in KNOWN_METRICS or request is rejected with a clear error
+- value_field must be "min" or "max" — anything else is silently cleared to null
+- operation must be in ALLOWED_OPERATIONS — anything else defaults to "list"
 
 
 Routing Decision (is_dashboard_question)

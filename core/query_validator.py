@@ -18,6 +18,14 @@ VALID_OPERATIONS = {
     "chart",
 }
 
+ALLOWED_VALUE_FIELDS = {"min", "max"}
+
+# Any of these in an LLM response indicates an injection attempt.
+_FORBIDDEN_OPERATORS = {
+    "$where", "$lookup", "$function", "$accumulator",
+    "$out", "$merge", "$graphLookup", "mapreduce",
+}
+
 
 def _clean(value):
     if value is None:
@@ -45,6 +53,14 @@ def validate_llm_query(data, original_question):
         raise ValueError(
             "LLM query must be a JSON object."
         )
+
+    # Reject any response that contains forbidden Mongo operators.
+    raw = str(data)
+    for op in _FORBIDDEN_OPERATORS:
+        if op in raw:
+            raise ValueError(
+                f"Forbidden operator in LLM response: {op}"
+            )
 
     operation = _clean(
         data.get("operation")
@@ -133,6 +149,12 @@ def validate_llm_query(data, original_question):
         min(limit, MAX_LIMIT),
     )
 
+    value_field = _clean(data.get("value_field"))
+    if value_field:
+        value_field = value_field.lower()
+        if value_field not in ALLOWED_VALUE_FIELDS:
+            value_field = None
+
     return Query(
         question=original_question,
         operation=operation,
@@ -144,5 +166,6 @@ def validate_llm_query(data, original_question):
         date_to=date_to,
         group_by=group_by,
         limit=limit,
+        value_field=value_field,
     )
 
