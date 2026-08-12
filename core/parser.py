@@ -373,21 +373,35 @@ def is_deterministic_query(question):
 
 
 DASHBOARD_KEYWORDS = {
-    "host", "hostname", "metric", "metrics", "boot", "spi", "eb0",
-    "sbl", "pbl", "tbl", "overall", "performance", "sku",
+    # top-level document fields
+    "host", "hostname", "filename", "date", "sku", "records",
+    "boottype", "boot", "spi", "eb0", "spiflow", "eb0flow",
+    # metric prefixes / aliases
+    "metric", "metrics",
+    "sbl", "pbl", "tbl", "overall", "mainfw",
+    "bootloaders", "performance",
+    # operations
     "fastest", "slowest", "highest", "lowest", "average",
     "trend", "plot", "graph", "chart", "compare", "count",
 }
 
-# Matches any UPPER_CASE_WITH_UNDERSCORES token — treat as a metric name.
+# Matches UPPER_CASE_WITH_UNDERSCORES metric names.
 _METRIC_PATTERN = re.compile(r"\b[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+\b")
+# Matches SKU values like 60TB, 30TB, 16GB.
+_SKU_PATTERN = re.compile(r"\b\d+(?:TB|GB|PB)\b", re.IGNORECASE)
+# Matches YYYY-MM-DD or YYYY/MM/DD dates.
+_DATE_PATTERN = re.compile(r"\b\d{4}[-/]\d{2}[-/]\d{2}\b")
 
 
 def is_dashboard_question(question: str) -> bool:
     """Return True when the question is likely about dashboard data."""
-    lower = normalize_text(question)
     if _METRIC_PATTERN.search(question):
         return True
+    if _SKU_PATTERN.search(question):
+        return True
+    if _DATE_PATTERN.search(question):
+        return True
+    lower = normalize_text(question)
     return any(
         re.search(r"\b" + re.escape(kw) + r"\b", lower)
         for kw in DASHBOARD_KEYWORDS
@@ -445,36 +459,37 @@ def is_simple_dashboard_question(question: str) -> bool:
     if _METRIC_PATTERN.search(question):
         return True
 
-    # Explicit hostname + metric / boot type.
+    # Explicit hostname + any filter.
     if extract_hostname(question):
         if (
             extract_metric(question)
             or extract_boot_type(question)
+            or extract_sku(question)
+            or extract_dates(question)[0]
         ):
             return True
 
-    # Very explicit simple operations.
-    simple_words = [
-        "list",
-        "show",
-        "display",
-        "give",
-    ]
+    # Any extractable filter with a simple action verb → deterministic.
+    _date_from, _ = extract_dates(question)
+    simple_words = ["list", "show", "display", "give", "get", "all"]
 
     if (
         any(
-            re.search(
-                r"\b" + re.escape(word) + r"\b",
-                q,
-            )
+            re.search(r"\b" + re.escape(word) + r"\b", q)
             for word in simple_words
         )
         and (
             extract_metric(question)
             or extract_hostname(question)
             or extract_boot_type(question)
+            or extract_sku(question)
+            or _date_from
         )
     ):
+        return True
+
+    # Date-only question: "show SBL on 2026-07-31"
+    if _date_from and (extract_metric(question) or extract_boot_type(question) or extract_sku(question)):
         return True
 
     return False
