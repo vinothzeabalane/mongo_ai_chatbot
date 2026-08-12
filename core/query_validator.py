@@ -18,6 +18,7 @@ VALID_OPERATIONS = {
     "average",
     "count",
     "chart",
+    "all_values",
 }
 
 ALLOWED_VALUE_FIELDS = {"min", "max"}

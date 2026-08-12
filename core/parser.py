@@ -60,7 +60,7 @@ METRIC_ALIASES = {
     "tbl": "TBL",
 }
 
-MAX_LIMIT = 500
+MAX_LIMIT = 5000
 DEFAULT_LIMIT = 100
 
 _NUMBER_WORDS = {
@@ -231,6 +231,10 @@ def extract_dates(question: str) -> Tuple[Optional[str], Optional[str]]:
 
 
 def extract_limit(question: str) -> int:
+    # "all", "every", "everything" → return the full ceiling
+    if re.search(r"\b(all|every|everything)\b", question, re.IGNORECASE):
+        return MAX_LIMIT
+
     patterns = [
         r"\btop\s+(\d{1,4})\b",
         r"\bfirst\s+(\d{1,4})\b",
@@ -324,6 +328,12 @@ def _contains_phrase(text: str, phrases) -> bool:
 
 def detect_operation(question: str, metric: Optional[str]) -> str:
     q = normalize_text(question)
+
+    # "get all values" / "show all metrics" — full data dump for matched records
+    if re.search(r"\ball\b", q, re.IGNORECASE) and re.search(
+        r"\b(values?|metrics?|data|columns?|fields?|everything)\b", q, re.IGNORECASE
+    ):
+        return "all_values"
 
     # fastest/slowest → explicit value_field semantics handled in parse_question
     if _contains_word(q, ["fastest", "best"]):

@@ -126,6 +126,9 @@ def _metric_projection(query: Query):
                 "max_seconds": _timing_to_seconds_expr(max_path),
             }
         )
+    else:
+        # No specific metric requested — return the full data subdocument.
+        projection["data"] = 1
 
     return projection
 
@@ -352,6 +355,10 @@ def build_pipeline(query: Query):
 
     if query.operation == "count":
         return build_count_pipeline(query)
+
+    # Full-data dump: return all metric fields for matching records.
+    if query.operation == "all_values":
+        return build_metric_pipeline(query)
 
     # Host/list query with no metric.
     if (

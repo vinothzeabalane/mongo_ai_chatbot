@@ -152,6 +152,24 @@ def records_to_rows(records):
     rows = []
 
     for record in records:
+        # Full-data mode: no single metric was requested; expand all metrics.
+        if "data" in record:
+            base = {}
+            for k in ["hostname", "sku", "bootType", "date"]:
+                v = record.get(k)
+                if v is not None:
+                    base[FRIENDLY_LABELS.get(k, k)] = v
+            for metric_name, timing in sorted(record["data"].items()):
+                if not isinstance(timing, dict):
+                    continue
+                row = {**base, "Metric": metric_name}
+                if timing.get("min") is not None:
+                    row["Min"] = timing["min"]
+                if timing.get("max") is not None:
+                    row["Max"] = timing["max"]
+                rows.append(row)
+            continue
+
         row = {}
 
         for key in [
