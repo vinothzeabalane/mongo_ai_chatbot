@@ -32,7 +32,7 @@ from config import (
 # ============================================================
 
 st.set_page_config(
-    page_title="BootProfile AI",
+    page_title="BootProfile Chatbot",
     page_icon="⚡",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -52,6 +52,7 @@ st.markdown("""
         margin-bottom: 1.5rem;
         display: flex;
         align-items: center;
+        justify-content: space-between;
         gap: 1rem;
     }
     .app-header h1 {
@@ -202,7 +203,10 @@ def read_recent_log_entries(path, tail_lines):
 # ============================================================
 
 with st.sidebar:
-    st.markdown("### ⚡ BootProfile AI")
+    _logo = Path("img/PS.jpg")
+    if _logo.exists():
+        st.image(str(_logo), use_container_width=True)
+    st.markdown("### ⚡ BootProfile AI Chatbot")
     st.caption("Boot performance dashboard assistant")
     st.divider()
 
@@ -229,8 +233,8 @@ with st.sidebar:
 st.markdown("""
 <div class="app-header">
     <div>
-        <h1>⚡ BootProfile AI Dashboard</h1>
-        <p>Ask questions about bootprofile  performance metrics, hosts, and timing data</p>
+        <h1>⚡ BootProfile AI Chatbot</h1>
+        <p>Ask questions about bootprofile performance metrics, hosts, and timing data</p>
     </div>
 </div>
 """, unsafe_allow_html=True)
