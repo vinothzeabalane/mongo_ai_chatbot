@@ -66,6 +66,19 @@ PARSER_CASES = [
         "plot SBL_TOTAL over time",
         {"operation": "chart", "metric": "SBL_TOTAL"},
     ),
+    (
+        "For 60TB EB0 hosts, find the three hosts with the lowest maximum PBL_LOAD_MAIN_FW time during July 2026",
+        {
+            "operation": "lowest",
+            "metric": "PBL_LOAD_MAIN_FW",
+            "sku": "60TB",
+            "bootType": "EB0",
+            "date_from": "2026-07-01",
+            "date_to": "2026-07-31",
+            "limit": 3,
+            "value_field": "max",
+        },
+    ),
 ]
 
 
@@ -159,6 +172,21 @@ class IntegrationSmokeTests(unittest.TestCase):
             "list all unique hostname details",
         )
         self.assertIsNone(q.hostname)
+
+    def test_hybrid_complex_month_query_routes_deterministic(self):
+        question = (
+            "For 60TB EB0 hosts, find the three hosts with the lowest maximum "
+            "PBL_LOAD_MAIN_FW time during July 2026"
+        )
+        query, meta = parse_hybrid(question)
+        self.assertEqual(meta["path"], "deterministic")
+        self.assertEqual(query.operation, "lowest")
+        self.assertEqual(query.metric, "PBL_LOAD_MAIN_FW")
+        self.assertEqual(query.sku, "60TB")
+        self.assertEqual(query.bootType, "EB0")
+        self.assertEqual(query.date_from, "2026-07-01")
+        self.assertEqual(query.date_to, "2026-07-31")
+        self.assertEqual(query.limit, 3)
 
 
 

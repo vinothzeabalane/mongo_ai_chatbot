@@ -41,3 +41,30 @@ OLLAMA_TIMEOUT = int(
         "60"
     )
 )
+
+
+# ============================================================
+# Interaction Logging
+# ============================================================
+
+ENABLE_QUERY_LOGGING = os.getenv(
+    "ENABLE_QUERY_LOGGING",
+    "1",
+) == "1"
+
+QUERY_LOG_PATH = os.getenv(
+    "QUERY_LOG_PATH",
+    "logs/chatbot_interactions.jsonl",
+)
+
+MASK_LOG_SENSITIVE = os.getenv(
+    "MASK_LOG_SENSITIVE",
+    "1",
+) == "1"
+
+ADMIN_LOG_TAIL_LINES = int(
+    os.getenv(
+        "ADMIN_LOG_TAIL_LINES",
+        "100",
+    )
+)

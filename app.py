@@ -1,10 +1,13 @@
 
 import json
+from collections import Counter
+from pathlib import Path
 
 import streamlit as st
 
 from core.hybrid_parser import parse_hybrid, OffTopicResponse
 from core.query_engine import execute
+from core.interaction_logger import log_interaction
 
 from ui.formatter import (
     format_query_context,
@@ -16,7 +19,12 @@ from ui.formatter import (
 
 from ui.charts import show_chart
 
-from config import COLLECTION_NAME, DATABASE_NAME
+from config import (
+    COLLECTION_NAME,
+    DATABASE_NAME,
+    QUERY_LOG_PATH,
+    ADMIN_LOG_TAIL_LINES,
+)
 
 
 # ============================================================
@@ -167,6 +175,28 @@ def execute_cached(query_dict):
     return execute(query)
 
 
+def read_recent_log_entries(path, tail_lines):
+    file_path = Path(path)
+    if not file_path.exists():
+        return []
+
+    lines = file_path.read_text(encoding="utf-8").splitlines()
+    if tail_lines > 0:
+        lines = lines[-tail_lines:]
+
+    entries = []
+    for line in lines:
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            entries.append(json.loads(line))
+        except json.JSONDecodeError:
+            continue
+
+    return entries
+
+
 # ============================================================
 # Sidebar
 # ============================================================
@@ -189,6 +219,7 @@ with st.sidebar:
 
     st.divider()
     show_debug = st.checkbox("🔧 Show debug info", value=False)
+    show_admin_logs = st.checkbox("Admin: view recent logs", value=False)
 
 
 # ============================================================
@@ -333,10 +364,29 @@ if submitted and question:
                     "pipeline": result["pipeline"],
                 })
 
+        log_interaction(
+            {
+                "event": "query_success",
+                "question": question,
+                "routing": routing,
+                "query": query.to_dict(),
+                "record_count": result.get("record_count", 0),
+                "pipeline": result.get("pipeline"),
+            }
+        )
+
     except OffTopicResponse as off_topic:
         st.markdown(
             f'<div class="answer-card-offtopic">💬 {off_topic.answer}</div>',
             unsafe_allow_html=True,
+        )
+
+        log_interaction(
+            {
+                "event": "query_offtopic",
+                "question": question,
+                "offtopic_answer": off_topic.answer,
+            }
         )
 
     except Exception as exc:
@@ -344,4 +394,34 @@ if submitted and question:
         if show_debug:
             with st.expander("Error details"):
                 st.exception(exc)
+
+        log_interaction(
+            {
+                "event": "query_error",
+                "question": question,
+                "error_type": type(exc).__name__,
+                "error_message": str(exc),
+            }
+        )
+
+
+# ============================================================
+# Admin logs
+# ============================================================
+
+if show_admin_logs:
+    st.markdown('<p class="section-label">Admin Logs</p>', unsafe_allow_html=True)
+
+    entries = read_recent_log_entries(QUERY_LOG_PATH, ADMIN_LOG_TAIL_LINES)
+    if not entries:
+        st.info("No log entries found yet.")
+    else:
+        event_counts = Counter(e.get("event", "unknown") for e in entries)
+        c1, c2, c3 = st.columns(3)
+        c1.metric("Logged events", len(entries))
+        c2.metric("Success", event_counts.get("query_success", 0))
+        c3.metric("Off-topic/Error", event_counts.get("query_offtopic", 0) + event_counts.get("query_error", 0))
+
+        with st.expander("Recent log entries"):
+            st.json(entries)
 

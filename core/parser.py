@@ -1,4 +1,5 @@
 import re
+import calendar
 from dataclasses import dataclass, asdict
 from typing import Optional, Tuple
 
@@ -61,6 +62,34 @@ METRIC_ALIASES = {
 
 MAX_LIMIT = 500
 DEFAULT_LIMIT = 100
+
+_NUMBER_WORDS = {
+    "one": 1,
+    "two": 2,
+    "three": 3,
+    "four": 4,
+    "five": 5,
+    "six": 6,
+    "seven": 7,
+    "eight": 8,
+    "nine": 9,
+    "ten": 10,
+}
+
+_MONTHS = {
+    "january": 1,
+    "february": 2,
+    "march": 3,
+    "april": 4,
+    "may": 5,
+    "june": 6,
+    "july": 7,
+    "august": 8,
+    "september": 9,
+    "october": 10,
+    "november": 11,
+    "december": 12,
+}
 
 
 # ============================================================
@@ -184,6 +213,20 @@ def extract_dates(question: str) -> Tuple[Optional[str], Optional[str]]:
     if len(dates) == 1:
         return dates[0], dates[0]
 
+    # Month-year range, e.g. "during July 2026".
+    month_match = re.search(
+        r"\b(january|february|march|april|may|june|july|august|september|october|november|december)\s+(\d{4})\b",
+        question,
+        re.IGNORECASE,
+    )
+
+    if month_match:
+        month_name = month_match.group(1).lower()
+        year = int(month_match.group(2))
+        month = _MONTHS[month_name]
+        last_day = calendar.monthrange(year, month)[1]
+        return f"{year:04d}-{month:02d}-01", f"{year:04d}-{month:02d}-{last_day:02d}"
+
     return None, None
 
 
@@ -200,6 +243,30 @@ def extract_limit(question: str) -> int:
         if match:
             value = int(match.group(1))
             return max(1, min(value, MAX_LIMIT))
+
+    # "top three", "first five", etc.
+    word_match = re.search(
+        r"\b(?:top|first|latest|last)\s+(one|two|three|four|five|six|seven|eight|nine|ten)\b",
+        question,
+        re.IGNORECASE,
+    )
+    if word_match:
+        value = _NUMBER_WORDS[word_match.group(1).lower()]
+        return max(1, min(value, MAX_LIMIT))
+
+    # "find the three hosts with the lowest ..."
+    generic_match = re.search(
+        r"\b(?:find|show|list|get|give)\s+(?:the\s+)?(\d{1,4}|one|two|three|four|five|six|seven|eight|nine|ten)\s+(?:fastest|slowest|lowest|highest|best|worst|hosts?|records?)\b",
+        question,
+        re.IGNORECASE,
+    )
+    if generic_match:
+        token = generic_match.group(1)
+        if token.isdigit():
+            value = int(token)
+        else:
+            value = _NUMBER_WORDS[token.lower()]
+        return max(1, min(value, MAX_LIMIT))
 
     return DEFAULT_LIMIT
 
@@ -301,6 +368,10 @@ def _detect_value_field(question: str, operation: str) -> Optional[str]:
 
     # fastest/slowest → use max (worst-case time = representative performance)
     if _contains_word(q, ["fastest", "best", "slowest", "worst"]):
+        return "max"
+
+    # Explicit "maximum" wording takes precedence, e.g. "lowest maximum".
+    if _contains_word(q, ["maximum", "max", "highest"]):
         return "max"
 
     # explicit minimum/lowest → use min column
@@ -421,6 +492,18 @@ def is_simple_dashboard_question(question: str) -> bool:
         return False
 
     q = normalize_text(question)
+
+    # If metric is explicit and at least one structured filter is extractable,
+    # deterministic parsing is typically reliable.
+    if _METRIC_PATTERN.search(question):
+        if (
+            extract_hostname(question)
+            or extract_boot_type(question)
+            or extract_sku(question)
+            or extract_dates(question)[0]
+            or _contains_word(q, ["highest", "lowest", "minimum", "maximum", "fastest", "slowest"])
+        ):
+            return True
 
     # Explicit complex language.
     complex_phrases = [

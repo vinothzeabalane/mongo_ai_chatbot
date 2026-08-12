@@ -1,4 +1,4 @@
-from core.parser import Query
+from core.parser import Query, DEFAULT_LIMIT
 
 
 # ============================================================
@@ -253,6 +253,8 @@ def build_extreme_pipeline(query: Query):
     else:
         value_field = "min_seconds"
 
+    extreme_limit = query.limit if query.limit != DEFAULT_LIMIT else 1
+
     pipeline.extend([
         {
             "$match": {
@@ -269,7 +271,7 @@ def build_extreme_pipeline(query: Query):
             }
         },
         {
-            "$limit": 1
+            "$limit": extreme_limit
         },
     ])
 
