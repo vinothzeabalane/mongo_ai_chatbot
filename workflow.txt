@@ -12,7 +12,7 @@ mongo_ai_chatbot/
 │   ├── query_builder.py       ← Query → Mongo aggregate pipeline
 │   ├── query_engine.py        ← Calls query_builder + mongo, returns results dict
 │   ├── query_validator.py     ← Validates + sanitises LLM JSON → trusted Query object
-│   ├── mongo.py               ← MongoDB connection pool
+│   ├── mongo.py               ← MongoDB connection pool (lock-guarded singleton MongoClient)
 │   └── interaction_logger.py  ← Appends JSONL interaction records; file rotation; IP/host masking
 ├── ai/
 │   └── llm.py                 ← ask_llm() JSON query parser
@@ -27,7 +27,8 @@ mongo_ai_chatbot/
 ├── img/
 │   └── PS.jpg                 ← Sidebar logo
 └── tests/
-    └── test_smoke.py          ← Regression suite (pytest)
+    ├── test_smoke.py          ← Regression suite (pytest)
+    └── test_concurrency.py    ← Multi-user/thread-safety suite (pytest)
 
 
 User question
@@ -72,7 +73,7 @@ Sidebar
 
 Query Object (core/parser.py → Query)
   field        description
-  operation    list | metric | lowest | highest | average | count | chart
+  operation    list | metric | lowest | highest | average | count | chart | all_values
   metric       e.g. SBL_TOTAL, OVERALL_TOTAL, MAINFW_CORESIGHT_INIT
   hostname     e.g. rc136-031-19-s3
   bootType     EB0 | SPI
@@ -80,11 +81,29 @@ Query Object (core/parser.py → Query)
   date_from    YYYY-MM-DD
   date_to      YYYY-MM-DD
   group_by     hostname | bootType | sku | date
-  limit        1–500 (default 100)
+  limit        1–5000 (default 100, MAX_LIMIT=5000; "all/every/everything" → MAX_LIMIT)
   value_field  "min" | "max" — which timing column to sort/aggregate on
                  fastest/slowest  → max   (sort on max_seconds)
                  lowest minimum   → min   (sort on min_seconds)
                  highest/average  → max
+
+  "all_values" operation:
+  - Triggered when the question contains "all" + values/metrics/data/columns/fields/everything.
+  - metric unset  → build_metric_pipeline() projects the full nested data{} subdocument;
+                    ui/formatter.py records_to_rows() explodes it into one row per metric.
+  - metric set    → same as "metric" operation but limit defaults to MAX_LIMIT.
+
+Date Extraction (core/parser.py → extract_dates)
+  Explicit dates    "2026-08-01" / "2026/08/01", or two dates → (date_from, date_to)
+  Relative days      today | yesterday | tomorrow           → single-day range
+  Relative weeks     this week | last week                  → Mon–Sun range
+  Relative months    this month | last month | previous month → calendar-month range
+  Month + year       e.g. "during July 2026"                → full calendar-month range
+  All computed from datetime.date.today() at parse time (no timezone handling).
+
+  Routing note: is_simple_dashboard_question() treats "between", "during", "last/this week",
+  "last/this/previous month" as complex-language triggers UNLESS extract_dates() can already
+  resolve them deterministically, in which case the question still stays on the regex parser.
 
 
 Security (core/query_validator.py)
@@ -149,6 +168,24 @@ Notes
 - Metrics live in nested Mongo fields: data.<METRIC_NAME>.min / .max
 - config.py holds MongoDB, Ollama, and interaction-logging settings (env-var overridable).
 - tests/test_smoke.py is the automated regression suite, run with: python -m pytest tests/test_smoke.py -v
+- tests/test_concurrency.py covers multi-user access, run with: python -m pytest tests/test_concurrency.py -v
+
+
+Concurrency / Multi-User Access
+- Streamlit runs each browser session in its own thread within the same server process,
+  so all sessions share one Python process and one set of module-level globals.
+- core/mongo.py: single module-level MongoClient (thread-safe, pools its own connections)
+  shared by every session. First-time creation is guarded by _INIT_LOCK (double-checked
+  locking) so two sessions hitting a cold start at the same instant can't create duplicate
+  clients.
+- st.session_state (question_input, result_ready) is isolated per browser session by Streamlit.
+- execute_cached() in app.py uses @st.cache_data(ttl=60) keyed only by query params — safely
+  shared across users since results don't depend on user identity.
+- core/interaction_logger.py serializes log writes/rotation with a threading.Lock (_WRITE_LOCK)
+  so concurrent writes never interleave or corrupt the JSONL file.
+- tests/test_concurrency.py verifies: (1) concurrent get_collection() calls return the same
+  MongoClient singleton, (2) concurrent execute() calls across mixed operations complete
+  without error, (3) concurrent log_interaction() writes produce valid, non-corrupted JSONL.
 
 
 config.py — Interaction Logging Settings

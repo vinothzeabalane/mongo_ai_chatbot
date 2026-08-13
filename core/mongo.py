@@ -1,3 +1,5 @@
+from threading import Lock
+
 from pymongo import MongoClient
 
 from config import (
@@ -10,6 +12,7 @@ from config import (
 _client = None
 _db = None
 _collection = None
+_INIT_LOCK = Lock()
 
 
 def get_collection():
@@ -18,13 +21,16 @@ def get_collection():
     global _collection
 
     if _collection is None:
-        _client = MongoClient(
-            MONGO_URI,
-            serverSelectionTimeoutMS=5000,
-        )
+        # Guard first-time client creation against concurrent Streamlit sessions.
+        with _INIT_LOCK:
+            if _collection is None:
+                _client = MongoClient(
+                    MONGO_URI,
+                    serverSelectionTimeoutMS=5000,
+                )
 
-        _db = _client[DATABASE_NAME]
-        _collection = _db[COLLECTION_NAME]
+                _db = _client[DATABASE_NAME]
+                _collection = _db[COLLECTION_NAME]
 
     return _collection
 
