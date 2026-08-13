@@ -1,5 +1,6 @@
 import re
 import calendar
+from datetime import date, timedelta
 from dataclasses import dataclass, asdict
 from typing import Optional, Tuple
 
@@ -212,6 +213,44 @@ def extract_dates(question: str) -> Tuple[Optional[str], Optional[str]]:
 
     if len(dates) == 1:
         return dates[0], dates[0]
+
+    # Relative date keywords: today / yesterday.
+    if re.search(r"\btoday\b", question, re.IGNORECASE):
+        today = date.today().isoformat()
+        return today, today
+
+    if re.search(r"\byesterday\b", question, re.IGNORECASE):
+        yday = (date.today() - timedelta(days=1)).isoformat()
+        return yday, yday
+
+    if re.search(r"\btomorrow\b", question, re.IGNORECASE):
+        tmrw = (date.today() + timedelta(days=1)).isoformat()
+        return tmrw, tmrw
+
+    # Relative week/month ranges.
+    if re.search(r"\blast week\b", question, re.IGNORECASE):
+        this_week_start = date.today() - timedelta(days=date.today().weekday())
+        start = this_week_start - timedelta(days=7)
+        end = start + timedelta(days=6)
+        return start.isoformat(), end.isoformat()
+
+    if re.search(r"\bthis week\b", question, re.IGNORECASE):
+        start = date.today() - timedelta(days=date.today().weekday())
+        end = start + timedelta(days=6)
+        return start.isoformat(), end.isoformat()
+
+    if re.search(r"\b(last|previous) month\b", question, re.IGNORECASE):
+        first_of_this_month = date.today().replace(day=1)
+        last_month_end = first_of_this_month - timedelta(days=1)
+        last_month_start = last_month_end.replace(day=1)
+        return last_month_start.isoformat(), last_month_end.isoformat()
+
+    if re.search(r"\bthis month\b", question, re.IGNORECASE):
+        today = date.today()
+        start = today.replace(day=1)
+        last_day = calendar.monthrange(today.year, today.month)[1]
+        end = today.replace(day=last_day)
+        return start.isoformat(), end.isoformat()
 
     # Month-year range, e.g. "during July 2026".
     month_match = re.search(
@@ -542,11 +581,17 @@ def is_simple_dashboard_question(question: str) -> bool:
         "recent",
     ]
 
-    if any(
-        phrase in q
-        for phrase in complex_phrases
-    ):
-        return False
+    # Date-only phrases (e.g. "last month", "between <date> and <date>") don't
+    # need the LLM once extract_dates() can resolve them deterministically.
+    date_only_phrases = {
+        "between", "during", "last month", "this month",
+        "last week", "this week", "previous month",
+    }
+    matched_complex = [phrase for phrase in complex_phrases if phrase in q]
+    if matched_complex:
+        dates_resolved = extract_dates(question)[0] is not None
+        if not (dates_resolved and all(phrase in date_only_phrases for phrase in matched_complex)):
+            return False
 
     # Hostname inventory/list intents should stay deterministic.
     # Example: "list all unique hostname details".
