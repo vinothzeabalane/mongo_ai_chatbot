@@ -1,0 +1,26 @@
+services:
+  mongo-ai-chatbot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mongo-ai-chatbot
+    hostname: mongo-ai-chatbot
+    working_dir: /app
+    ports:
+      - "8502:8501"
+    environment:
+      MONGO_URI: mongodb://host.docker.internal:27018
+      DATABASE_NAME: openstack
+      COLLECTION_NAME: dashboard
+      OLLAMA_HOST: http://host.docker.internal:11434
+      OLLAMA_MODEL: llama3.1:8b
+      OLLAMA_TIMEOUT: "60"
+      ENABLE_QUERY_LOGGING: "1"
+      QUERY_LOG_PATH: logs/chatbot_interactions.jsonl
+      MASK_LOG_SENSITIVE: "1"
+      ADMIN_LOG_TAIL_LINES: "100"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - /home/remlab/ps-bpt/mongo_ai_chatbot:/app
+    restart: unless-stopped

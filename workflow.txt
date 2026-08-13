@@ -1,7 +1,9 @@
 mongo_ai_chatbot/
-├── app.py                     ← Streamlit entry point
+├── app.py                     ← Streamlit entry point (debug/admin checkboxes now hidden)
 ├── config.py                  ← MongoDB + Ollama + Logging settings (env-var overridable)
-├── requirements.txt
+├── Dockerfile                 ← Container image definition (Python 3.11-slim, streamlit on 8501)
+├── docker-compose.yml         ← Orchestration: port 8502→8501, restart: unless-stopped, local bind mount
+├── requirements.txt           ← streamlit, pymongo, pandas, requests, plotly
 ├── workflow.txt
 ├── testing.txt
 ├── .gitignore
@@ -31,7 +33,37 @@ mongo_ai_chatbot/
     └── test_concurrency.py    ← Multi-user/thread-safety suite (pytest)
 
 
-User question
+DEPLOYMENT (Docker Compose)
+To start the containerized chatbot:
+  cd /home/remlab/ps-bpt/mongo_ai_chatbot
+  docker compose up -d --build
+
+Services
+  mongo-ai-chatbot
+    Image:     mongo_ai_chatbot-mongo-ai-chatbot (built from Dockerfile)
+    Port:      0.0.0.0:8502 → 8501 (Streamlit)
+    Restart:   unless-stopped
+    Mount:     /home/remlab/ps-bpt/mongo_ai_chatbot:/app (bind; live code sync)
+    Network:   mongo_ai_chatbot_default
+    Env vars:  MONGO_URI, DATABASE_NAME, OLLAMA_HOST, etc. (from docker-compose.yml)
+
+  Dependencies
+    MongoDB    via host.docker.internal:27018 (ps-mongod-test container)
+    Ollama     via host.docker.internal:11434 (ollama container)
+
+Access
+  Local:  http://localhost:8502
+  Remote: http://<server-ip>:8502
+
+Logs
+  docker compose logs -f mongo-ai-chatbot
+
+Stop
+  docker compose down
+
+
+USER INTERFACE
+
      │
      ▼
  core/hybrid_parser.py → parse_hybrid()
@@ -67,8 +99,9 @@ User question
 
 Sidebar
 - PS.jpg logo displayed at the top.
-- "Show debug info" checkbox gates: Detailed view, MongoDB Query, Debug expanders.
-- "Admin: view recent logs" checkbox shows log metrics + recent JSONL entries.
+- "Show debug info" checkbox — CURRENTLY HIDDEN (commented in app.py, show_debug = False)
+- "Admin: view recent logs" checkbox — CURRENTLY HIDDEN (commented in app.py, show_admin_logs = False)
+  Note: Debug expanders and log viewer are still functional if flags are uncommented.
 
 
 Query Object (core/parser.py → Query)

@@ -2,4 +2,6 @@
 streamlit
 pymongo
 pandas
+requests
+plotly
 

@@ -32,7 +32,7 @@ from config import (
 # ============================================================
 
 st.set_page_config(
-    page_title="BootProfile Chatbot",
+    page_title="BootProfile AI Chatbot",
     page_icon="⚡",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -222,8 +222,11 @@ with st.sidebar:
         st.caption(f"• {ex}")
 
     st.divider()
-    show_debug = st.checkbox("🔧 Show debug info", value=False)
-    show_admin_logs = st.checkbox("Admin: view recent logs", value=False)
+    # Temporarily hidden sidebar controls
+    show_debug = False
+    show_admin_logs = False
+    # show_debug = st.checkbox("🔧 Show debug info", value=False)
+    # show_admin_logs = st.checkbox("Admin: view recent logs", value=False)
 
 
 # ============================================================
