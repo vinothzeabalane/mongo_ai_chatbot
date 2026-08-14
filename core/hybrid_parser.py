@@ -9,7 +9,7 @@ from core.query_validator import (
     validate_llm_query,
 )
 
-from ai.llm import ask_llm, ask_llm_plain
+from ai.llm import ask_llm
 
 
 class OffTopicResponse(Exception):
@@ -19,10 +19,16 @@ class OffTopicResponse(Exception):
         self.answer = answer
 
 
+OUT_OF_SCOPE_MESSAGE = (
+    "I can only answer questions about the Bootloader profile dashboard "
+    "(boot metrics, hosts, SKUs, dates, etc.). That question is outside my scope."
+)
+
+
 def parse_hybrid(question: str):
     """
     Three-way routing:
-      1. Off-topic           → ask_llm_plain → raise OffTopicResponse
+      1. Off-topic           → fixed out-of-scope message (no LLM call)
       2. Simple dashboard    → deterministic parser
       3. Complex dashboard   → LLM JSON parser
     """
@@ -36,9 +42,9 @@ def parse_hybrid(question: str):
         raise ValueError("Question cannot be empty.")
 
     # Gate 1: off-topic — no dashboard keywords and no metric pattern.
+    # Never delegate to the LLM here; it must not answer general-knowledge questions.
     if not is_dashboard_question(question):
-        answer = ask_llm_plain(question)
-        raise OffTopicResponse(answer)
+        raise OffTopicResponse(OUT_OF_SCOPE_MESSAGE)
 
     # Gate 2: simple dashboard — deterministic parser is reliable.
     if is_simple_dashboard_question(question):
